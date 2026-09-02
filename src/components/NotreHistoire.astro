@@ -1,0 +1,124 @@
+---
+import { Image } from "astro:assets";
+import histoirePhoto from "../assets/photos/notre-histoire-reflexion-v4.jpg";
+---
+
+<section id="notre-histoire" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group flex flex-col items-start gap-6">
+    <p class="kicker">Notre histoire</p>
+    <h2 class="histoire-title">
+      Tout est parti d'une idée simple : les retrouver là où ils sont.
+    </h2>
+  </div>
+
+  <div class="histoire-grid mt-12 grid gap-10 lg:grid-cols-12 lg:gap-14 lg:mt-16">
+    <div class="reveal-group histoire-media lg:col-span-5">
+      <Image
+        src={histoirePhoto}
+        alt="Une jeune femme assise en tailleur, le regard pensif tourné vers le ciel, dans un environnement naturel bordé de palmiers."
+        class="histoire-photo w-full reveal-photo"
+        widths={[400, 640, 800, 1000]}
+        sizes="(min-width: 1024px) 40vw, 100vw"
+        loading="lazy"
+      />
+    </div>
+
+    <div class="reveal-group histoire-text text-ink/70 lg:col-span-7">
+      <p>
+        Jeune Chrétien est né d'une idée simple : contribuer à
+        l'affermissement des jeunes chrétiens là où ils sont chaque jour : en
+        ligne.
+      </p>
+      <p>
+        Avec le développement des technologies numériques, notamment des
+        réseaux sociaux, le monde n'a jamais été aussi connecté qu'aujourd'hui.
+        La jeunesse mondiale est particulièrement présente sur ces
+        plateformes. Si elle y est fortement connectée, ce n'est pas seulement
+        en raison de la gratuité ou du faible coût de la communication. C'est
+        aussi parce qu'elle consomme, en grande quantité, les contenus qui y
+        sont proposés par des particuliers, des créateurs et des médias
+        professionnels.
+      </p>
+      <p>
+        De plus en plus de jeunes chrétiens en Afrique utilisent
+        quotidiennement les réseaux sociaux. Ils y consomment, aiment,
+        commentent et partagent des contenus. Cette présence représente une
+        véritable opportunité pour le Corps du Christ de toucher largement la
+        jeunesse chrétienne.
+      </p>
+      <p>
+        Alors que les jeunes ne sont pas toujours présents à l'église pour
+        bénéficier de contenus susceptibles de contribuer à leur
+        affermissement, ils sont quotidiennement présents sur les réseaux
+        sociaux. Il devient donc essentiel de les retrouver là où ils sont.
+      </p>
+      <p>
+        Après plus de deux années d'existence, Jeune Chrétien s'est
+        transformé et a évolué. Nous avons compris que les jeunes chrétiens
+        sont également confrontés aux réalités de leur époque : chômage,
+        sous-emploi, choix de carrière, orientation professionnelle,
+        conditions sociales difficiles, entre autres.
+      </p>
+      <p>
+        Pourtant, ils ne bénéficient pas toujours d'un accompagnement sur les
+        différents aspects socio-professionnels de leur vie.
+      </p>
+      <p>
+        C'est pourquoi Jeune Chrétien a progressivement adopté une approche
+        holistique. Il ne s'agit plus seulement de s'intéresser à la foi des
+        jeunes, mais également à leur devenir dans la société.
+      </p>
+      <p>
+        Aujourd'hui, Jeune Chrétien ambitionne de devenir une plateforme où
+        les jeunes chrétiens peuvent trouver des réponses à leurs questions et
+        des ressources pour avancer sur plusieurs dimensions de leur vie :
+        spirituelle, socio-professionnelle et académique.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .histoire-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .histoire-photo {
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  .histoire-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 42rem;
+  }
+
+  /* L'image reste visible pendant la lecture d'un texte long — technique
+     éditoriale classique, réservée au desktop (le lecteur mobile fait
+     défiler normalement). */
+  @media (min-width: 64rem) {
+    .histoire-media {
+      position: sticky;
+      top: 6.5rem;
+      align-self: start;
+    }
+  }
+</style>

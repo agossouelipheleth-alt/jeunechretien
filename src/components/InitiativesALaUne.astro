@@ -1,0 +1,130 @@
+---
+import { Image } from "astro:assets";
+import campagneCjcj from "../assets/photos/campagne-cjcj.jpg";
+import afficheAfterchurch from "../assets/photos/affiche-afterchurch-v2.png";
+
+// Deux vraies initiatives (les mêmes que sur la homepage, voir
+// NosInitiatives.astro) — plus de placeholders ici.
+const initiatives = [
+  {
+    type: "Campagne",
+    title: "Célébrons Jésus, célébrons la jeunesse",
+    description:
+      "Campagne d'évangélisation en ligne ayant pour objectif de faire connaître Jésus-Christ Sauveur à des jeunes via les réseaux sociaux.",
+    meta: "#CJCJ",
+    image: campagneCjcj,
+    imageAlt:
+      "Affiche de la campagne #CJCJ « Célébrons Jésus, célébrons la jeunesse » de Jeune Chrétien, sur fond rouge avec guirlandes et étoiles dorées.",
+  },
+  {
+    type: "Événement",
+    title: "AfterChurch",
+    description:
+      "Un évènement de détente où se mêlent convivialité, fraternité et rencontres entre jeunes chrétiens de tous bords. Comme son nom l'indique, il se tient après le culte du dimanche.",
+    meta: "28 avril 2024",
+    image: afficheAfterchurch,
+    imageAlt:
+      "Affiche AfterChurch avec des jeunes souriants en collage, mentionnant jeux inédits, récompenses, collation et discussions.",
+  },
+] as const;
+---
+
+<section id="initiatives-a-la-une" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">À la une</p>
+    <h2 class="initiatives-title">Ce que nous faisons en ce moment.</h2>
+  </div>
+
+  <div class="initiatives-grid reveal-group mt-16 lg:mt-20">
+    {
+      initiatives.map((initiative) => (
+        <article class="initiative-card card-hover">
+          <div class="initiative-media card-hover-media reveal-photo">
+            <Image
+              src={initiative.image}
+              alt={initiative.imageAlt}
+              class="h-full w-full object-cover"
+              style="aspect-ratio: 4/3;"
+              widths={[300, 500, 700, 1000]}
+              sizes="(min-width: 768px) 45vw, 100vw"
+              loading="lazy"
+            />
+          </div>
+          <div class="initiative-content">
+            <p class="initiative-type">{initiative.type}</p>
+            <h3>{initiative.title}</h3>
+            <p class="text-ink/70">{initiative.description}</p>
+            <p class="initiative-meta">{initiative.meta}</p>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .initiatives-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .initiatives-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  @media (min-width: 48rem) {
+    .initiatives-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .initiative-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .initiative-media {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .initiative-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.625rem;
+  }
+
+  .initiative-type {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .initiative-card h3 {
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+
+  .initiative-meta {
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+</style>

@@ -1,0 +1,178 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import MediaPlaceholder from "./MediaPlaceholder.astro";
+import SuivreChaineWhatsApp from "./SuivreChaineWhatsApp.astro";
+import formatPodcasts from "../assets/photos/format-podcasts.jpg";
+import formatWebinaires from "../assets/photos/format-webinaires.jpg";
+import formatRencontres from "../assets/photos/format-rencontres.png";
+import formatTemoignages from "../assets/photos/spinoza-hero-studio.jpg";
+import formatArticles from "../assets/photos/format-articles.jpg";
+import formatFormations from "../assets/photos/format-formations.jpg";
+import formatInitiatives from "../assets/photos/campagne-cjcj.jpg";
+import formatVideos from "../assets/photos/format-videos.jpg";
+
+// Type explicite (plutôt que `as const`) : chaque entrée a la même forme,
+// avec `image`/`imageAlt` optionnels — évite un piège de narrowing
+// TypeScript où un tableau `as const` mélangeant des formes d'objets
+// différentes (avec/sans image) peut faire dériver `format` vers `never`
+// dans la branche sans image du template ci-dessous.
+interface FormatItem {
+  title: string;
+  text: string;
+  image?: ImageMetadata;
+  imageAlt?: string;
+}
+
+const formats: FormatItem[] = [
+  {
+    title: "Articles",
+    text: "Réflexions, analyses et ressources.",
+    image: formatArticles,
+    imageAlt: "Une machine à écrire vintage Olympia avec une feuille portant le mot « Article ».",
+  },
+  {
+    title: "Vidéos",
+    text: "Interviews, témoignages, enseignements et contenus courts.",
+    image: formatVideos,
+    imageAlt: "Miniature de la vidéo « 5 qualités du partenaire idéal », réponse de l'Ancien Sossou Josué.",
+  },
+  {
+    title: "Podcasts",
+    text: "Conversations et réflexions autour des réalités de la jeunesse.",
+    image: formatPodcasts,
+    imageAlt: "Deux micros de studio et un casque audio posés sur une table, ambiance violette.",
+  },
+  {
+    title: "Webinaires",
+    text: "Rencontres et formations en ligne.",
+    image: formatWebinaires,
+    imageAlt: "Un ordinateur portable ouvert affichant le mot « Webinar » à l'écran.",
+  },
+  {
+    title: "Formations",
+    text: "Programmes et sessions d'apprentissage.",
+    image: formatFormations,
+    imageAlt: "Une formatrice écrit « Team Work » sur un tableau de conférence devant un petit groupe assis autour d'une table.",
+  },
+  {
+    title: "Rencontres",
+    text: "Moments d'échange et de connexion en présentiel.",
+    image: formatRencontres,
+    imageAlt: "Un groupe de cinq jeunes souriants, bras levés, lors d'une rencontre en soirée.",
+  },
+  {
+    title: "Témoignages",
+    text: "Expériences et parcours de jeunes.",
+    image: formatTemoignages,
+    imageAlt: "Goussanou Baruc Spinoza en pullover rouge, jouant de la guitare devant un micro.",
+  },
+  {
+    title: "Initiatives",
+    text: "Actions et projets portés par Jeune Chrétien.",
+    image: formatInitiatives,
+    imageAlt: "Affiche de la campagne #CJCJ « Célébrons Jésus, célébrons la jeunesse » de Jeune Chrétien, sur fond rouge avec guirlandes et étoiles dorées.",
+  },
+];
+---
+
+<section id="nos-formats" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">Nos formats</p>
+    <h2 class="formats-title">Des contenus, mais pas seulement.</h2>
+  </div>
+
+  <div class="formats-grid reveal-group mt-16 lg:mt-20">
+    {
+      formats.map((format) => (
+        <article class="format-card card-hover">
+          <div class="format-thumb reveal-photo overflow-hidden rounded-lg">
+            {format.image ? (
+              <Image
+                src={format.image}
+                alt={format.imageAlt ?? ""}
+                class="h-full w-full object-cover"
+                style="aspect-ratio: 4/3;"
+                widths={[150, 250, 350, 500]}
+                sizes="(min-width: 1024px) 22vw, 45vw"
+                loading="lazy"
+              />
+            ) : (
+              <MediaPlaceholder
+                ratio="4/3"
+                label={`Miniature – ${format.title}`}
+                class="h-full w-full"
+                hideLabel
+              />
+            )}
+          </div>
+          <h3>{format.title}</h3>
+          <p class="text-ink/70">{format.text}</p>
+        </article>
+      ))
+    }
+  </div>
+
+  <div class="formats-wa reveal-group mt-12 flex flex-col items-center gap-3 text-center lg:mt-16">
+    <p class="text-ink/70">
+      Retrouve nos nouvelles ressources directement sur WhatsApp.
+    </p>
+    <SuivreChaineWhatsApp location="ce-que-nous-faisons" variant="secondary" />
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .formats-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .formats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.75rem 1.25rem;
+  }
+  @media (min-width: 48rem) {
+    .formats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .formats-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .format-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .format-thumb {
+    margin-bottom: 0.25rem;
+  }
+
+  .format-card h3 {
+    font-weight: 600;
+    font-size: 1.0625rem;
+  }
+
+  .format-card p {
+    font-size: 0.875rem;
+  }
+</style>

@@ -1,0 +1,43 @@
+---
+// Page statique, prégénérée au build — malgré le passage du site en sortie
+// "server" pour "Parle-nous" (voir astro.config.mjs).
+export const prerender = true;
+
+import Layout from "../layouts/Layout.astro";
+import CeQueNousFaisonsHero from "../components/CeQueNousFaisonsHero.astro";
+import NosDomainesAction from "../components/NosDomainesAction.astro";
+import FoiSpiritualite from "../components/FoiSpiritualite.astro";
+import DeveloppementPersonnel from "../components/DeveloppementPersonnel.astro";
+import FormationCarriere from "../components/FormationCarriere.astro";
+import CommunauteFraternite from "../components/CommunauteFraternite.astro";
+import OpportunitesReseau from "../components/OpportunitesReseau.astro";
+import EngagementImpact from "../components/EngagementImpact.astro";
+import NotreMethode from "../components/NotreMethode.astro";
+import NosFormats from "../components/NosFormats.astro";
+import EcosystemeNumerique from "../components/EcosystemeNumerique.astro";
+import AuDelaEcran from "../components/AuDelaEcran.astro";
+import InitiativesALaUne from "../components/InitiativesALaUne.astro";
+import CeQueNousFaisonsCta from "../components/CeQueNousFaisonsCta.astro";
+---
+
+<Layout
+  title="Ce que nous faisons – Jeune Chrétien"
+  description="Contenus, ressources et initiatives : découvrez concrètement comment Jeune Chrétien accompagne les jeunes dans leur foi, leur développement et leur avenir."
+>
+  <main>
+    <CeQueNousFaisonsHero />
+    <NosDomainesAction />
+    <FoiSpiritualite />
+    <DeveloppementPersonnel />
+    <FormationCarriere />
+    <CommunauteFraternite />
+    <OpportunitesReseau />
+    <EngagementImpact />
+    <NotreMethode />
+    <NosFormats />
+    <EcosystemeNumerique />
+    <AuDelaEcran />
+    <InitiativesALaUne />
+    <CeQueNousFaisonsCta />
+  </main>
+</Layout>

@@ -1,0 +1,81 @@
+---
+// Placeholder média — brief : "Chaque section construite reçoit un
+// placeholder clairement identifié (cadre + légende décrivant l'image
+// attendue) jusqu'à réception des vrais médias. Ne jamais présenter un
+// placeholder comme un contenu définitif."
+interface Props {
+  /** Ratio CSS, ex. "16/9", "3/2", "4/5", "1/1". */
+  ratio: string;
+  /** Légende décrivant l'image attendue (format, contenu). */
+  label: string;
+  class?: string;
+  /** Variante claire-sur-sombre, pour une section à fond sombre. */
+  dark?: boolean;
+  /** Masque visuellement l'icône/légende (ex. quand un texte est déjà
+   * superposé par-dessus, comme dans une carte éditoriale) — le libellé
+   * reste disponible pour les lecteurs d'écran via aria-label. */
+  hideLabel?: boolean;
+}
+
+const { ratio, label, class: className, dark = false, hideLabel = false } = Astro.props;
+---
+
+<div
+  class:list={["media-placeholder", { "media-placeholder--dark": dark }, className]}
+  style={`aspect-ratio: ${ratio};`}
+  role="img"
+  aria-label={label}
+>
+  {
+    !hideLabel && (
+      <>
+        <svg
+          class="media-placeholder-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="m21 15-5-5L5 21" />
+        </svg>
+        <p class="media-placeholder-label">{label}</p>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .media-placeholder {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    border-radius: var(--radius-lg);
+    border: 1px dashed color-mix(in srgb, var(--color-ink) 20%, transparent);
+    background-color: color-mix(in srgb, var(--color-ink) 3%, transparent);
+    color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .media-placeholder--dark {
+    border-color: rgb(255 255 255 / 0.25);
+    background-color: rgb(255 255 255 / 0.06);
+    color: rgb(255 255 255 / 0.5);
+  }
+  .media-placeholder-icon {
+    width: 2rem;
+    height: 2rem;
+  }
+  .media-placeholder-label {
+    max-width: 24rem;
+    font-size: 0.8125rem;
+  }
+</style>

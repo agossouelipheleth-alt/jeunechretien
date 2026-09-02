@@ -1,0 +1,195 @@
+---
+import { Image } from "astro:assets";
+// Mêmes photos que le triptyque de NotreConstat.astro (Qui sommes-nous ?)
+// — les trois dimensions Spirituel/Académique/Socio-professionnel sont
+// identiques d'une page à l'autre, la réutilisation crée une continuité
+// visuelle entre les deux.
+import constatSpirituel from "../assets/photos/constat-spirituel-priere.png";
+import constatAcademique from "../assets/photos/constat-academique.jpg";
+import constatSocioPro from "../assets/photos/constat-socio-professionnel.jpg";
+
+const domains = [
+  {
+    number: "01",
+    kicker: "Spirituel",
+    title: "Grandir dans la foi.",
+    text: "Des contenus et des activités pour contribuer à l'affermissement des jeunes chrétiens et les aider à approfondir leur foi.",
+    image: constatSpirituel,
+    alt: "Une jeune femme en prière, mains jointes, assise dans son salon près d'une croix murale.",
+    href: "#foi-spiritualite",
+  },
+  {
+    number: "02",
+    kicker: "Académique",
+    title: "Construire son parcours.",
+    text: "Des ressources autour des études, de l'orientation et des choix qui peuvent influencer le parcours académique.",
+    image: constatAcademique,
+    alt: "Une jeune diplômée en toge et toque, fière de son parcours académique.",
+    href: "#developpement-personnel",
+  },
+  {
+    number: "03",
+    kicker: "Socio-professionnel",
+    title: "Préparer son avenir.",
+    text: "Des contenus et ressources autour de l'emploi, de la carrière, de l'entrepreneuriat et des réalités socio-professionnelles.",
+    image: constatSocioPro,
+    alt: "Un jeune homme au travail dans un atelier de menuiserie, concentré sur son ouvrage.",
+    href: "#formation-carriere",
+  },
+] as const;
+---
+
+<section id="nos-domaines-action" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">Nos domaines d'action</p>
+    <h2 class="domaines-title w-full">
+      Parce que les réalités de la jeunesse sont multiples.
+    </h2>
+    <p class="w-full text-ink/70">
+      Notre action s'inscrit dans plusieurs dimensions de la vie des jeunes
+      chrétiens. Nous voulons leur proposer des contenus, des ressources et
+      des initiatives qui répondent à leurs réalités spirituelles,
+      académiques et socio-professionnelles.
+    </p>
+  </div>
+
+  <div class="domaines-grid reveal-group mt-16 lg:mt-20">
+    {
+      domains.map((domain) => (
+        <article class="domaine-card card-hover">
+          <div class="domaine-media reveal-photo overflow-hidden rounded-lg">
+            <Image
+              src={domain.image}
+              alt={domain.alt}
+              class="domaine-photo h-full w-full"
+              widths={[300, 500, 700]}
+              sizes="(min-width: 1024px) 30vw, 90vw"
+              loading="lazy"
+            />
+          </div>
+          <span class="domaine-number" aria-hidden="true">
+            {domain.number}
+          </span>
+          <p class="domaine-kicker">{domain.kicker}</p>
+          <h3>{domain.title}</h3>
+          <p class="text-ink/70">{domain.text}</p>
+          <a href={domain.href} class="cta-text">
+            <span>Découvrir</span>
+            <span class="cta-arrow" aria-hidden="true">
+              →
+            </span>
+          </a>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .domaines-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .domaines-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  @media (min-width: 64rem) {
+    .domaines-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  .domaine-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.625rem;
+  }
+
+  .domaine-media {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .domaine-photo {
+    display: block;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .domaine-number {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
+
+  .domaine-kicker {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .domaine-card h3 {
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+
+  .cta-text {
+    position: relative;
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .cta-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .cta-text:hover,
+  .cta-text:focus-visible {
+    color: var(--color-accent);
+  }
+  .cta-text:hover::after,
+  .cta-text:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .cta-arrow {
+    transition: transform 150ms var(--ease-out-site);
+  }
+  .cta-text:hover .cta-arrow,
+  .cta-text:focus-visible .cta-arrow {
+    transform: translateX(4px);
+  }
+</style>

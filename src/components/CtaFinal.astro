@@ -1,0 +1,76 @@
+---
+---
+
+<section id="cta-final" class="container-content px-4 py-32 sm:px-6 lg:py-40">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">Jeune Chrétien</p>
+    <h2 class="cta-title">Et si vous commenciez par découvrir ?</h2>
+    <p class="text-ink/70">
+      Explorez nos contenus, découvrez nos initiatives et trouvez les
+      ressources qui peuvent vous aider à grandir dans votre foi, développer
+      votre potentiel et prendre votre place.
+    </p>
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="/blog" class="btn-primary">Explorer le blog</a>
+      <a href="/ce-que-nous-faisons" class="btn-secondary">Découvrir nos initiatives</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .cta-title {
+    font-size: clamp(1.75rem, 1.3rem + 2vw, 3rem);
+    line-height: 1.15;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--color-accent);
+    transition:
+      filter 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site),
+      outline-color 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+  }
+  .btn-primary:hover {
+    filter: brightness(0.88);
+  }
+  .btn-primary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+  .btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+  .btn-secondary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+</style>

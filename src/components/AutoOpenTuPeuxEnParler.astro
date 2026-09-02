@@ -1,0 +1,67 @@
+---
+// Déclenche automatiquement l'ouverture de la modale globale "Tu peux en
+// parler" (voir TuPeuxEnParler.astro) quand le visiteur atteint, en
+// scrollant, l'élément ciblé par `targetId` — par exemple la fin de la
+// homepage, ou plus tard la fin d'un article/d'une vidéo de blog.
+//
+// Garde-fous :
+//   - une seule fois par session (sessionStorage) ;
+//   - jamais si le visiteur a déjà ouvert la modale — manuellement ou
+//     automatiquement — pendant cette même visite (drapeau partagé posé
+//     par TuPeuxEnParler.astro à chaque ouverture, quelle qu'en soit
+//     l'origine) ;
+//   - jamais si la modale est déjà ouverte au moment du déclenchement.
+//
+// Usage : <AutoOpenTuPeuxEnParler targetId="cta-final" />
+interface Props {
+  targetId: string;
+}
+
+const { targetId } = Astro.props;
+---
+
+<script is:inline define:vars={{ targetId }}>
+  (function () {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    let alreadyInteracted = false;
+    try {
+      alreadyInteracted = sessionStorage.getItem("tpp-interacted") === "1";
+    } catch {
+      // sessionStorage indisponible — on suppose qu'il n'y a pas eu
+      // d'interaction, comportement par défaut le moins intrusif possible
+      // n'étant pas garanti ici, mais ce cas reste marginal.
+    }
+    if (alreadyInteracted) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          observer.unobserve(entry.target);
+
+          let interacted = false;
+          try {
+            interacted = sessionStorage.getItem("tpp-interacted") === "1";
+          } catch {
+            // ignore
+          }
+          const overlay = document.getElementById("tpp-overlay");
+          const alreadyOpen = overlay ? !overlay.hidden : false;
+
+          if (!interacted && !alreadyOpen && typeof window.openTuPeuxEnParler === "function") {
+            window.openTuPeuxEnParler();
+          }
+        }
+      },
+      { threshold: prefersReducedMotion ? 0.1 : 0.4 }
+    );
+
+    observer.observe(target);
+  })();
+</script>

@@ -1,0 +1,567 @@
+---
+// Page statique : la seule partie dynamique (l'envoi du message) passe
+// par un fetch client-side vers /api/parle-nous, pas par un rendu serveur
+// par requête — la page elle-même peut donc rester prégénérée.
+export const prerender = true;
+
+import Layout from "../layouts/Layout.astro";
+
+const categories = [
+  {
+    key: "question",
+    emoji: "💬",
+    title: "Une question",
+    description: "J'ai une question et j'aimerais avoir un éclairage.",
+  },
+  {
+    key: "preoccupation",
+    emoji: "🤍",
+    title: "Une préoccupation",
+    description: "Je traverse une situation dont j'aimerais parler.",
+  },
+  {
+    key: "priere",
+    emoji: "🙏",
+    title: "Une demande de prière",
+    description: "Je souhaite confier une situation ou une personne dans la prière.",
+  },
+  {
+    key: "autre",
+    emoji: "",
+    title: "Autre",
+    description: "Je souhaite simplement partager quelque chose.",
+  },
+] as const;
+---
+
+<Layout
+  title="Parle-nous – Jeune Chrétien"
+  description="Une question, une préoccupation, une demande de prière ? Tu peux nous l'écrire ici, et rester anonyme si tu le souhaites."
+>
+  <main>
+    <section id="parle-nous" class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div id="parle-nous-flow">
+        <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+          <p class="kicker">Parle-nous</p>
+          <h1 class="parle-title w-full">Qu'aimerais-tu nous partager ?</h1>
+          <div class="flex w-full flex-col gap-4 text-ink/70">
+            <p>
+              Il n'est pas toujours facile de trouver les mots ou la
+              personne à qui parler.
+            </p>
+            <p>
+              Si tu as une question, une préoccupation ou une demande de
+              prière, tu peux nous l'écrire ici. Tu peux choisir de rester
+              anonyme.
+            </p>
+          </div>
+        </div>
+
+        <form id="parle-nous-form" class="parle-form mx-auto mt-14 flex max-w-2xl flex-col gap-10 lg:mt-20" novalidate>
+          {/* Piège anti-bot : invisible pour un visiteur humain, mais un
+              script qui remplit tous les champs le remplira aussi. */}
+          <div class="honeypot" aria-hidden="true">
+            <label for="website">Laisser ce champ vide</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="parle-field-group">
+            <p class="parle-label" id="category-label">Qu'aimerais-tu partager ?</p>
+            <div class="category-grid" aria-labelledby="category-label">
+              {
+                categories.map((category) => (
+                  <button
+                    type="button"
+                    class="category-card"
+                    data-category={category.key}
+                    aria-pressed="false"
+                  >
+                    {category.emoji && (
+                      <span class="category-emoji" aria-hidden="true">
+                        {category.emoji}
+                      </span>
+                    )}
+                    <span class="category-title">{category.title}</span>
+                    <span class="category-desc">{category.description}</span>
+                  </button>
+                ))
+              }
+            </div>
+          </div>
+
+          <div id="step-message" class="parle-step parle-field-group" hidden>
+            <label class="parle-label" for="message">Ton message</label>
+            <textarea
+              id="message"
+              name="message"
+              class="parle-textarea"
+              rows="6"
+              placeholder="Écris ici ta question, ta situation ou ton sujet de prière..."
+              maxlength="4000"
+            ></textarea>
+            <p class="parle-hint">
+              Tu n'es pas obligé de donner ton nom ni tes coordonnées.
+            </p>
+          </div>
+
+          <div id="step-anonymity" class="parle-step parle-field-group" hidden>
+            <p class="parle-label" id="anonymity-label">Souhaites-tu rester anonyme ?</p>
+            <div class="anonymity-options" aria-labelledby="anonymity-label">
+              <label class="anonymity-option">
+                <input type="radio" name="anonymity" value="oui" checked />
+                <span>Oui, je souhaite rester anonyme</span>
+              </label>
+              <label class="anonymity-option">
+                <input type="radio" name="anonymity" value="non" />
+                <span>Non, je souhaite laisser mes coordonnées</span>
+              </label>
+            </div>
+
+            <div id="contact-fields" class="contact-fields" hidden>
+              <div class="parle-field-group">
+                <label class="parle-label" for="name">Nom – facultatif</label>
+                <input type="text" id="name" name="name" class="parle-input" autocomplete="name" />
+              </div>
+              <div class="parle-field-group">
+                <label class="parle-label" for="email">Adresse e-mail – facultatif</label>
+                <input type="email" id="email" name="email" class="parle-input" autocomplete="email" />
+              </div>
+              <p class="parle-hint">
+                Si tu souhaites recevoir une réponse, tu peux laisser ton
+                adresse e-mail. Sinon, tu peux laisser ces champs vides.
+              </p>
+            </div>
+          </div>
+
+          <div id="step-submit" class="parle-step" hidden>
+            <p id="form-error" class="parle-error" role="alert" hidden></p>
+            <button type="submit" class="btn-primary" id="submit-button">
+              Envoyer mon message
+            </button>
+            <p class="parle-hint mt-3">
+              Ton message sera transmis à l'équipe habilitée de Jeune
+              Chrétien afin d'être lu avec attention.
+            </p>
+            <p class="parle-disclaimer">
+              Jeune Chrétien propose un espace d'écoute, d'échange et de
+              prière – pas un service médical, psychologique ou
+              juridique. Si ta situation le demande, nous pourrons
+              t'orienter vers les ressources adaptées.
+            </p>
+          </div>
+        </form>
+
+        <p class="parle-privacy-link">
+          <a href="/politique-confidentialite">Politique de confidentialité de tes données</a>
+        </p>
+      </div>
+
+      <div id="parle-nous-confirmation" class="confirmation" hidden tabindex="-1">
+        <div class="mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
+          <h2 class="confirmation-title">Merci de nous avoir écrit.</h2>
+          <p class="text-ink/70">Ton message a bien été reçu.</p>
+          <p class="text-ink/70" data-role="confirmation-category-line"></p>
+          <p class="confirmation-alone">Tu n'es pas seul.</p>
+          <a href="/" class="btn-primary">Retour à Jeune Chrétien</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .parle-title {
+    font-size: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);
+    line-height: 1.15;
+  }
+
+  /* --- Champs & labels partagés ------------------------------------ */
+  .parle-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .parle-label {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .parle-textarea,
+  .parle-input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.6;
+    transition:
+      border-color 150ms var(--ease-out-site),
+      box-shadow 150ms var(--ease-out-site);
+  }
+  .parle-textarea {
+    resize: vertical;
+    min-height: 11rem;
+  }
+  .parle-textarea:focus,
+  .parle-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+
+  .parle-hint {
+    font-size: 0.875rem;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  .parle-disclaimer {
+    margin-top: 1.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  }
+
+  .parle-error {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, #b3261e 8%, transparent);
+    color: #8c1d17;
+    font-size: 0.9375rem;
+  }
+  :root[data-theme="dark"] .parle-error {
+    color: #ffb4ab;
+    background-color: color-mix(in srgb, #ffb4ab 12%, transparent);
+  }
+
+  /* --- Piège anti-bot, invisible mais accessible au DOM ------------- */
+  .honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+  }
+
+  /* --- Sélection de catégorie --------------------------------------- */
+  .category-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 40rem) {
+    .category-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .category-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1.25rem 1.375rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site);
+  }
+  .category-card:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+  .category-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .category-card[aria-pressed="true"] {
+    border-color: var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+
+  .category-emoji {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .category-title {
+    font-weight: 600;
+  }
+
+  .category-desc {
+    font-size: 0.875rem;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  /* --- Anonymat ------------------------------------------------------ */
+  .anonymity-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .anonymity-option {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    cursor: pointer;
+  }
+  .anonymity-option input[type="radio"] {
+    accent-color: var(--color-accent);
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .contact-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* --- Étapes révélées progressivement -------------------------------
+     Pas de scroll-reveal ici : la visibilité dépend de l'interaction
+     (choix d'une catégorie), pas de la position de scroll — mécanisme
+     volontairement séparé du système .reveal-group/.reveal-item global. */
+  .parle-step {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 500ms var(--ease-out-site),
+      transform 500ms var(--ease-out-site);
+  }
+  .parle-step.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .parle-step {
+      transition: none;
+    }
+  }
+
+  /* --- Bouton principal (identique au reste du site) ------------------ */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-accent);
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: filter 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .btn-primary:hover {
+    filter: brightness(0.88);
+  }
+  .btn-primary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .parle-privacy-link {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 0.8125rem;
+  }
+  .parle-privacy-link a {
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .parle-privacy-link a:hover {
+    color: var(--color-ink);
+  }
+
+  /* --- Confirmation ---------------------------------------------------- */
+  .confirmation {
+    padding-block: 2rem;
+    /* Le focus est déplacé ici par script (lecteurs d'écran) — anneau
+       discret assorti au design system plutôt que l'anneau par défaut
+       du navigateur. */
+    outline: none;
+  }
+  .confirmation:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 8px;
+    border-radius: var(--radius-md);
+  }
+  .confirmation-title {
+    font-size: clamp(1.75rem, 1.3rem + 2vw, 3rem);
+    line-height: 1.15;
+  }
+  .confirmation-alone {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  }
+</style>
+
+<script>
+  const flow = document.getElementById("parle-nous-flow");
+  const confirmation = document.getElementById("parle-nous-confirmation");
+  const confirmationCategoryLine = confirmation?.querySelector(
+    '[data-role="confirmation-category-line"]'
+  );
+
+  const form = document.getElementById("parle-nous-form") as HTMLFormElement | null;
+  const categoryButtons = document.querySelectorAll<HTMLButtonElement>(".category-card");
+  const stepMessage = document.getElementById("step-message");
+  const stepAnonymity = document.getElementById("step-anonymity");
+  const stepSubmit = document.getElementById("step-submit");
+  const contactFields = document.getElementById("contact-fields");
+  const messageInput = document.getElementById("message") as HTMLTextAreaElement | null;
+  const nameInput = document.getElementById("name") as HTMLInputElement | null;
+  const emailInput = document.getElementById("email") as HTMLInputElement | null;
+  const websiteInput = document.getElementById("website") as HTMLInputElement | null;
+  const submitButton = document.getElementById("submit-button") as HTMLButtonElement | null;
+  const formError = document.getElementById("form-error");
+
+  let selectedCategory: string | null = null;
+
+  function revealStep(el: HTMLElement | null) {
+    if (!el || !el.hidden) return;
+    el.hidden = false;
+    requestAnimationFrame(() => el.classList.add("is-visible"));
+  }
+
+  function showError(message: string) {
+    if (!formError) return;
+    formError.textContent = message;
+    formError.hidden = false;
+  }
+
+  function clearError() {
+    if (!formError) return;
+    formError.hidden = true;
+    formError.textContent = "";
+  }
+
+  categoryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedCategory = button.dataset.category ?? null;
+      categoryButtons.forEach((other) => {
+        other.setAttribute("aria-pressed", String(other === button));
+      });
+      revealStep(stepMessage);
+      revealStep(stepAnonymity);
+      revealStep(stepSubmit);
+    });
+  });
+
+  document.querySelectorAll<HTMLInputElement>('input[name="anonymity"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (!contactFields) return;
+      const wantsToShareContact = radio.value === "non" && radio.checked;
+      contactFields.hidden = !wantsToShareContact;
+    });
+  });
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearError();
+
+    if (!selectedCategory) {
+      showError("Choisis d'abord ce que tu souhaites partager.");
+      return;
+    }
+
+    const message = messageInput?.value.trim() ?? "";
+    if (!message) {
+      showError("Ajoute un message avant d'envoyer.");
+      messageInput?.focus();
+      return;
+    }
+
+    const anonymityChoice =
+      document.querySelector<HTMLInputElement>('input[name="anonymity"]:checked')?.value ?? "oui";
+    const isAnonymous = anonymityChoice !== "non";
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Envoi en cours...";
+    }
+
+    try {
+      const response = await fetch("/api/parle-nous", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: selectedCategory,
+          message,
+          isAnonymous,
+          name: isAnonymous ? "" : nameInput?.value ?? "",
+          email: isAnonymous ? "" : emailInput?.value ?? "",
+          website: websiteInput?.value ?? "",
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        showError(
+          data?.message ??
+            "Une erreur est survenue. Ton message n'a pas pu être envoyé, merci de réessayer."
+        );
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Envoyer mon message";
+        }
+        return;
+      }
+
+      if (confirmationCategoryLine) {
+        confirmationCategoryLine.textContent =
+          selectedCategory === "priere"
+            ? "Nous allons porter ta demande dans la prière."
+            : "Ton message sera lu avec attention par l'équipe de Jeune Chrétien.";
+      }
+
+      if (flow) flow.hidden = true;
+      if (confirmation) {
+        confirmation.hidden = false;
+        confirmation.focus();
+        confirmation.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } catch {
+      showError("Une erreur est survenue. Ton message n'a pas pu être envoyé, merci de réessayer.");
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Envoyer mon message";
+      }
+    }
+  });
+</script>

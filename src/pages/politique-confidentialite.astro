@@ -1,0 +1,100 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Politique de confidentialité – Jeune Chrétien"
+  description="Comment Jeune Chrétien traite les messages et les informations partagées via « Parle-nous »."
+>
+  <main>
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="mx-auto flex max-w-2xl flex-col gap-10">
+        <div class="flex flex-col gap-4">
+          <p class="kicker">Confidentialité</p>
+          <h1 class="page-title">Politique de confidentialité</h1>
+          <p class="text-ink/70">
+            Cette page explique comment Jeune Chrétien traite les messages
+            envoyés via « Parle-nous », ainsi que les informations que tu
+            choisis ou non de partager.
+          </p>
+        </div>
+
+        <div class="policy-content flex flex-col gap-8 text-ink/80">
+          <div class="flex flex-col gap-2">
+            <h2>Ce que nous collectons</h2>
+            <p>
+              Par défaut, ton message est envoyé de façon anonyme : nous ne
+              collectons ni ton nom, ni ton adresse e-mail, ni aucune autre
+              information d'identification. Si tu choisis de ne pas rester
+              anonyme, ton nom et ton adresse e-mail restent facultatifs –
+              tu peux laisser ces champs vides même dans ce cas.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <h2>Qui peut lire ton message</h2>
+            <p>
+              Seules les personnes habilitées de l'équipe Jeune Chrétien ont
+              accès aux messages reçus via « Parle-nous ». Ces messages sont
+              stockés de façon sécurisée et ne sont ni partagés, ni utilisés
+              à d'autres fins que la lecture attentive et, le cas échéant,
+              une réponse si tu as laissé un moyen de te contacter.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <h2>Combien de temps tes données sont conservées</h2>
+            <p>
+              Les messages traités peuvent être archivés pour le suivi
+              interne de l'accompagnement, ou supprimés à la demande. Si tu
+              souhaites qu'un message te concernant soit supprimé, tu peux
+              nous l'écrire – via « Parle-nous » ou à
+              <a href="mailto:jeunechretienmedia@gmail.com">jeunechretienmedia@gmail.com</a>.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <h2>Ce que « Parle-nous » n'est pas</h2>
+            <p>
+              Jeune Chrétien propose un espace d'écoute, d'échange et de
+              prière, dans le cadre de sa mission d'accompagnement. Ce n'est
+              pas un service médical, psychologique ou juridique. Si ta
+              situation nécessite une intervention spécialisée, notre
+              équipe pourra t'orienter vers des ressources ou des
+              professionnels adaptés. Nous ne pouvons pas garantir un délai
+              de réponse ni une solution à chaque message.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .page-title {
+    font-size: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);
+    line-height: 1.15;
+  }
+
+  .policy-content h2 {
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+
+  .policy-content a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+</style>

@@ -1,0 +1,96 @@
+---
+import { Image } from "astro:assets";
+import communautePhoto from "../assets/photos/communaute-fraternite-cercle.png";
+
+const words = ["Échanger", "Écouter", "Partager", "Apprendre"] as const;
+---
+
+<section id="communaute-fraternite" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">04 – Communauté & fraternité</p>
+    <h2 class="communaute-title w-full">
+      Créer des espaces où les jeunes peuvent échanger.
+    </h2>
+    <p class="w-full text-ink/70">
+      Le contenu ne suffit pas toujours. Les jeunes ont aussi besoin
+      d'espaces pour poser leurs questions, partager leurs expériences,
+      échanger avec d'autres et apprendre les uns des autres.
+    </p>
+  </div>
+
+  <div class="communaute-media reveal-group mx-auto mt-16 max-w-4xl lg:mt-20">
+    <Image
+      src={communautePhoto}
+      alt="Un groupe de jeunes assis en cercle sur des nattes, sous des palmiers, en pleine discussion."
+      class="communaute-photo w-full reveal-photo"
+      widths={[640, 1024, 1440, 1920]}
+      sizes="(min-width: 1024px) 64rem, 100vw"
+      loading="lazy"
+    />
+    <span class="communaute-word communaute-word-tl reveal-item">{words[0]}</span>
+    <span class="communaute-word communaute-word-tr reveal-item">{words[1]}</span>
+    <span class="communaute-word communaute-word-bl reveal-item">{words[2]}</span>
+    <span class="communaute-word communaute-word-br reveal-item">{words[3]}</span>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .communaute-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .communaute-media {
+    position: relative;
+  }
+
+  .communaute-photo {
+    display: block;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  .communaute-word {
+    position: absolute;
+    padding-inline: 0.75rem;
+    padding-block: 0.4rem;
+    border-radius: 9999px;
+    background-color: rgb(7 5 0 / 0.55);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .communaute-word-tl {
+    top: 1rem;
+    left: 1rem;
+  }
+  .communaute-word-tr {
+    top: 1rem;
+    right: 1rem;
+  }
+  .communaute-word-bl {
+    bottom: 1rem;
+    left: 1rem;
+  }
+  .communaute-word-br {
+    bottom: 1rem;
+    right: 1rem;
+  }
+</style>

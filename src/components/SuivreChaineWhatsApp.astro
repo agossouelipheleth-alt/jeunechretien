@@ -1,0 +1,144 @@
+---
+import { WHATSAPP_CHANNEL_URL } from "../lib/whatsapp";
+
+// CTA unique "Suivre la chaîne WhatsApp" — réutilisé sur toutes les pages
+// (brief "Intégration de la chaîne WhatsApp" sections 4, 6, 13, 14, 18).
+// Fonctionnellement distinct de "Tu peux en parler" : lien externe direct,
+// jamais de modale, jamais le même libellé.
+//
+//   - `location` alimente l'événement analytique whatsapp_channel_click
+//     (voir le script de suivi dans Layout.astro) — homepage / footer /
+//     ce-que-nous-faisons / blog / article.
+//   - `variant` choisit le traitement visuel du bouton.
+interface Props {
+  location: string;
+  variant?: "primary" | "secondary" | "text";
+  class?: string;
+}
+
+const { location, variant = "primary", class: className } = Astro.props;
+---
+
+{
+  WHATSAPP_CHANNEL_URL ? (
+    <a
+      href={WHATSAPP_CHANNEL_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-whatsapp-cta
+      data-location={location}
+      class:list={[`wa-cta wa-cta--${variant}`, className]}
+    >
+      <span>Suivre la chaîne WhatsApp</span>
+      <span class="wa-cta-external" aria-hidden="true">↗</span>
+      <span class="sr-only"> (ouvre WhatsApp dans un nouvel onglet)</span>
+    </a>
+  ) : (
+    <span class:list={["wa-cta-placeholder", className]}>
+      Suivre la chaîne WhatsApp — [URL CHAÎNE WHATSAPP À RENSEIGNER]
+    </span>
+  )
+}
+
+<style>
+  .wa-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      filter 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site),
+      outline-color 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .wa-cta-external {
+    font-size: 0.875em;
+  }
+
+  .wa-cta--primary,
+  .wa-cta--secondary {
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border: 1px solid var(--color-accent);
+    justify-content: center;
+  }
+  .wa-cta--primary {
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+  }
+  .wa-cta--primary:hover {
+    filter: brightness(0.88);
+  }
+  .wa-cta--secondary {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+  .wa-cta--secondary:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+  .wa-cta--primary:focus-visible,
+  .wa-cta--secondary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+
+  .wa-cta--text {
+    position: relative;
+    color: var(--color-ink);
+    padding: 0;
+    border: none;
+    background: none;
+  }
+  .wa-cta--text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .wa-cta--text:hover,
+  .wa-cta--text:focus-visible {
+    color: var(--color-accent);
+  }
+  .wa-cta--text:hover::after,
+  .wa-cta--text:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .wa-cta--text:focus-visible {
+    outline-color: var(--color-accent);
+  }
+
+  .wa-cta-placeholder {
+    display: inline-flex;
+    align-items: center;
+    padding-inline: 1rem;
+    padding-block: 0.625rem;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-style: italic;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

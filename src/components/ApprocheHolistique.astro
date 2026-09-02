@@ -1,0 +1,135 @@
+---
+// Reprend les 3 dimensions déjà posées dans "Notre constat"
+// (Spirituel / Académique / Socio-professionnel), ici sous forme de
+// blocs typographiques (pas de photo — voir NotreConstat.astro pour le
+// traitement photographique de ces mêmes dimensions). Sert de pont vers
+// "Ce que nous faisons", sans remplacer cette page.
+const dimensions = [
+  { title: "Spirituel", tagline: "Grandir dans la foi." },
+  { title: "Académique", tagline: "Construire son parcours." },
+  { title: "Socio-professionnel", tagline: "Préparer son avenir." },
+] as const;
+---
+
+<section id="approche-holistique" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">Notre approche holistique</p>
+    <h2 class="approche-title w-full">
+      Parce qu'accompagner un jeune, c'est aussi s'intéresser à son avenir.
+    </h2>
+  </div>
+
+  <div class="dimensions-grid reveal-group mt-16 lg:mt-20">
+    {
+      dimensions.map((dimension) => (
+        <div class="dimension-block">
+          <h3>{dimension.title}</h3>
+          <p>{dimension.tagline}</p>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="reveal-group mx-auto mt-16 flex max-w-xl flex-col items-center gap-6 text-center lg:mt-20">
+    <p class="text-ink/70">
+      Ces dimensions constituent le socle de l'approche holistique de Jeune
+      Chrétien.
+    </p>
+    <a href="/ce-que-nous-faisons" class="btn-primary">
+      Découvrir ce que nous faisons →
+    </a>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .approche-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .dimensions-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: 56rem;
+    margin-inline: auto;
+  }
+  @media (min-width: 48rem) {
+    .dimensions-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .dimension-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+    border-top: 1px solid var(--color-border);
+  }
+  .dimension-block:last-child {
+    border-bottom: 1px solid var(--color-border);
+  }
+  @media (min-width: 48rem) {
+    /* :last-child répété ici : sa spécificité (deux sélecteurs) l'emporte
+       sinon sur .dimension-block seul, même dans cette media query plus
+       tardive — la bordure basse pensée pour clore la liste mobile
+       restait donc visible sur la 3ᵉ colonne en desktop. */
+    .dimension-block,
+    .dimension-block:last-child {
+      border-top: none;
+      border-bottom: none;
+      border-left: 1px solid var(--color-border);
+    }
+    .dimension-block:first-child {
+      border-left: none;
+    }
+  }
+
+  .dimension-block h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.375rem;
+  }
+
+  .dimension-block p {
+    color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-accent);
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    font-weight: 500;
+    text-decoration: none;
+    transition: filter 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .btn-primary:hover {
+    filter: brightness(0.88);
+  }
+  .btn-primary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+</style>

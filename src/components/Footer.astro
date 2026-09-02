@@ -1,0 +1,204 @@
+---
+import { Image } from "astro:assets";
+import logo from "../assets/jeune-chretien-logo.png";
+import SuivreChaineWhatsApp from "./SuivreChaineWhatsApp.astro";
+
+const navLinks = [
+  { href: "/", label: "Accueil" },
+  { href: "/qui-sommes-nous", label: "Qui sommes-nous ?" },
+  { href: "/ce-que-nous-faisons", label: "Ce que nous faisons" },
+  { href: "/blog", label: "Notre blog" },
+] as const;
+
+const year = new Date().getFullYear();
+
+const socials = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/mediajeunechretien",
+    path: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z",
+  },
+  {
+    label: "YouTube",
+    href: "https://youtube.com/@jeunechretien9982",
+    paths: [
+      "M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17Z",
+      "m10 15 5-3-5-3v6Z",
+    ],
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/jeunechretien_media/",
+    paths: [
+      "M4 4m0 4a4 4 0 0 1 4 -4h8a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-8a4 4 0 0 1 -4 -4z",
+      "M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0",
+      "M16.5 7.5l0 .01",
+    ],
+  },
+] as const;
+---
+
+<footer class="site-footer border-t border-ink/10">
+  <div class="container-content grid gap-12 px-4 py-16 sm:px-6 md:grid-cols-3 md:gap-8">
+    <div class="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
+      <a href="/" aria-label="Jeune Chrétien – Accueil">
+        <Image
+          src={logo}
+          alt=""
+          width={40}
+          height={40}
+          densities={[1, 2, 3]}
+          class="site-logo"
+        />
+      </a>
+      <p class="text-sm text-ink/60">Grandir dans la foi. Se développer. Servir.</p>
+    </div>
+
+    <nav aria-label="Navigation du pied de page">
+      <ul class="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
+        {
+          navLinks.map((link) => (
+            <li>
+              <a href={link.href} class="footer-link">
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
+      <p class="text-sm font-medium text-ink">Contact</p>
+      <a href="mailto:jeunechretienmedia@gmail.com" class="footer-link text-sm">
+        jeunechretienmedia@gmail.com
+      </a>
+      <ul class="flex gap-3">
+        {
+          socials.map((social) => {
+            const icon = (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                {"path" in social ? (
+                  <path d={social.path} />
+                ) : (
+                  social.paths.map((d) => <path d={d} />)
+                )}
+              </svg>
+            );
+            return (
+              <li>
+                <a
+                  href={social.href}
+                  class="social-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                >
+                  {icon}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-ink/10 px-4 py-8 text-center sm:px-6">
+    <p class="mb-1 text-sm font-medium text-ink">Nos nouveautés sur WhatsApp</p>
+    <p class="mx-auto mb-3 max-w-xs text-sm text-ink/60">
+      Suis notre chaîne pour ne rien manquer de nos nouveaux contenus et
+      initiatives.
+    </p>
+    <SuivreChaineWhatsApp location="footer" variant="text" />
+  </div>
+
+  <div class="border-t border-ink/10 px-4 py-6 text-center sm:px-6">
+    <p class="mb-2 flex flex-wrap items-center justify-center gap-2 text-xs text-ink/50">
+      <span>Besoin de nous parler ?</span>
+      <a href="/parle-nous" class="footer-link">Parle-nous →</a>
+    </p>
+    <p class="text-xs text-ink/40">
+      © {year} Jeune Chrétien, designed by Eliphéleth Sergio Agossou
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background-color: var(--color-bg);
+  }
+
+  /* Cohérence visuelle avec le logo du header (même fichier noir/blanc
+     pur à fond transparent) — celui-ci n'est pas cliquable, il suit
+     simplement le thème du site. */
+  :global([data-theme="dark"]) .site-logo {
+    filter: invert(1);
+  }
+  .site-logo {
+    transition: filter 300ms var(--ease-out-site);
+  }
+
+  .footer-link {
+    position: relative;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .footer-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .footer-link:hover,
+  .footer-link:focus-visible {
+    color: var(--color-accent);
+  }
+  .footer-link:hover::after,
+  .footer-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+    color: var(--color-ink);
+    transition:
+      color 150ms var(--ease-out-site),
+      border-color 150ms var(--ease-out-site);
+  }
+  .social-link svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  .social-link:hover,
+  .social-link:focus-visible {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer-link::after {
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>

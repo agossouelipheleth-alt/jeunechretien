@@ -1,0 +1,446 @@
+---
+import { Image } from "astro:assets";
+import logo from "../assets/jeune-chretien-logo.png";
+
+const navLinks = [
+  { href: "/", label: "Accueil" },
+  { href: "/qui-sommes-nous", label: "Qui sommes-nous ?" },
+  { href: "/ce-que-nous-faisons", label: "Ce que nous faisons" },
+  { href: "/blog", label: "Notre blog" },
+] as const;
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/" ? currentPath === "/" : currentPath.startsWith(href);
+
+---
+
+<header id="site-header" class="sticky top-0 z-50 border-b border-ink/10">
+  <div class="container-content flex h-full items-center justify-between px-4 sm:px-6">
+    <a
+      id="theme-toggle"
+      href="/"
+      aria-label="Accueil — Jeune Chrétien. Double-cliquez pour activer le thème sombre."
+    >
+      <Image
+        src={logo}
+        alt=""
+        width={52}
+        height={52}
+        densities={[1, 2, 3]}
+        loading="eager"
+        fetchpriority="high"
+        class="site-logo"
+      />
+    </a>
+
+    <!-- Desktop : liens + CTA. Seuil lg (1024px) plutôt que md (768px) —
+         entre les deux, la nav complète + le bouton "Soutenez-nous" ne
+         tiennent pas confortablement (le bouton finissait par passer sur
+         deux lignes) : tablette bascule donc aussi sur le hamburger. -->
+    <nav class="hidden lg:flex lg:items-center lg:gap-6" aria-label="Navigation principale">
+      {
+        navLinks.map((link) => (
+          <a
+            href={link.href}
+            class="nav-link"
+            aria-current={isActive(link.href) ? "page" : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+    <a href="/soutenez-nous" class="btn-support hidden lg:inline-flex">Soutenez-nous</a>
+
+    <!-- Mobile/tablette : hamburger seul à droite -->
+    <button
+      id="menu-toggle"
+      type="button"
+      class="flex h-11 w-11 items-center justify-center lg:hidden"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      aria-label="Ouvrir le menu"
+    >
+      <span class="hamburger" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+  </div>
+</header>
+
+<div
+  id="mobile-menu"
+  class="mobile-menu fixed inset-x-0 top-[68px] bottom-0 z-40 lg:hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu de navigation"
+>
+  <ul class="flex flex-col items-center justify-center gap-2 px-6 py-8">
+    {
+      navLinks.map((link) => (
+        <li class="w-full text-center">
+          <a
+            href={link.href}
+            class="mobile-nav-link flex min-h-[44px] items-center justify-center px-4 py-3 text-lg"
+            aria-current={isActive(link.href) ? "page" : undefined}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+    <li class="mt-2 w-full text-center">
+      <a href="/soutenez-nous" class="btn-support mobile-nav-link inline-flex">
+        Soutenez-nous
+      </a>
+    </li>
+  </ul>
+</div>
+
+<style>
+  #site-header {
+    height: 88px;
+    background-color: var(--color-bg);
+    box-shadow: none;
+    transition:
+      height 250ms var(--ease-out-site),
+      box-shadow 250ms var(--ease-out-site),
+      background-color 300ms var(--ease-out-site);
+  }
+  #site-header.is-scrolled {
+    height: 68px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Le logo est un lien vers l'accueil (clic simple) qui bascule aussi
+     le thème sombre au double-clic (voir script plus bas) — pensé pour
+     mobile, où le lien "Accueil" du menu n'est pas toujours facilement
+     accessible. touch-action: manipulation désactive le double-tap-zoom
+     par défaut du navigateur mobile, sans quoi un double-tap sur le logo
+     zoomerait la page au lieu de déclencher la bascule de thème. En
+     thème sombre, un simple filter: invert(1) suffit — le fichier logo
+     est un noir/blanc pur à fond transparent, l'inversion donne
+     exactement le médaillon blanc / trait noir attendu. */
+  #theme-toggle {
+    display: block;
+    line-height: 0;
+    border-radius: var(--radius-md);
+    touch-action: manipulation;
+  }
+  #theme-toggle:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  :global([data-theme="dark"]) .site-logo {
+    filter: invert(1);
+  }
+  .site-logo {
+    transition: filter 300ms var(--ease-out-site);
+  }
+
+  .btn-support {
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.25rem;
+    padding-block: 0.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-ink);
+    color: var(--color-ink);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition:
+      background-color 150ms var(--ease-out-site),
+      color 150ms var(--ease-out-site);
+  }
+  .btn-support:hover,
+  .btn-support:focus-visible {
+    background-color: var(--color-ink);
+    color: var(--color-on-fill);
+  }
+
+  .nav-link {
+    position: relative;
+    padding-block: 0.375rem;
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    color: var(--color-accent);
+  }
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after,
+  .nav-link[aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+  .nav-link[aria-current="page"] {
+    color: var(--color-accent);
+  }
+
+  .hamburger {
+    position: relative;
+    display: block;
+    width: 22px;
+    height: 16px;
+  }
+  .hamburger span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--color-ink);
+    transition:
+      transform 250ms var(--ease-out-site),
+      opacity 150ms var(--ease-out-site);
+  }
+  .hamburger span:nth-child(1) {
+    top: 0;
+  }
+  .hamburger span:nth-child(2) {
+    top: 7px;
+  }
+  .hamburger span:nth-child(3) {
+    top: 14px;
+  }
+  #menu-toggle[aria-expanded="true"] .hamburger span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  #menu-toggle[aria-expanded="true"] .hamburger span:nth-child(2) {
+    opacity: 0;
+  }
+  #menu-toggle[aria-expanded="true"] .hamburger span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .mobile-menu {
+    /* Fond volontairement fixe (pas var(--color-ink), qui devient clair
+       en thème sombre) : ce panneau plein écran reste sombre quel que
+       soit le thème du site. */
+    background-color: #070500;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 150ms var(--ease-out-site),
+      visibility 0s linear 150ms;
+  }
+  .mobile-menu.is-open {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 250ms var(--ease-out-site);
+  }
+
+  .mobile-nav-link {
+    color: #fff;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 200ms var(--ease-out-site),
+      transform 200ms var(--ease-out-site),
+      color 150ms var(--ease-out-site);
+  }
+  .mobile-menu.is-open .mobile-nav-link {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .mobile-menu.is-open li:nth-child(1) .mobile-nav-link {
+    transition-delay: 0ms;
+  }
+  .mobile-menu.is-open li:nth-child(2) .mobile-nav-link {
+    transition-delay: 40ms;
+  }
+  .mobile-menu.is-open li:nth-child(3) .mobile-nav-link {
+    transition-delay: 80ms;
+  }
+  .mobile-menu.is-open li:nth-child(4) .mobile-nav-link {
+    transition-delay: 120ms;
+  }
+  .mobile-nav-link:hover,
+  .mobile-nav-link:focus-visible,
+  .mobile-nav-link[aria-current="page"] {
+    color: var(--color-accent-on-dark);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #site-header,
+    .hamburger span,
+    .mobile-menu,
+    .mobile-nav-link,
+    .nav-link::after {
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+
+<script>
+  // Le logo a un comportement différent selon la largeur d'écran :
+  //   - Desktop (≥1024px, même seuil que le nav principal lg:flex/menu
+  //     hamburger lg:hidden) : le lien "Accueil" est déjà visible dans le
+  //     menu principal, donc un simple clic sur le logo bascule
+  //     directement le thème sombre, sans navigation.
+  //   - Mobile/tablette (<1024px) : le lien "Accueil" n'est accessible
+  //     qu'en ouvrant le menu hamburger — un simple clic sur le logo
+  //     ramène donc directement à l'accueil (via un timer, pour laisser
+  //     la place à un éventuel second clic) ; un double-clic bascule le
+  //     thème. On compte les événements "click" plutôt que d'écouter
+  //     "dblclick" : deux appuis rapides sur Entrée au clavier
+  //     déclenchent aussi deux "click", donc le double-clic reste
+  //     utilisable sans souris.
+  // Les clics modifiés (molette, Ctrl/Cmd+clic…) gardent leur
+  // comportement natif du navigateur (ouverture dans un nouvel onglet).
+  const themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) {
+    const DOUBLE_CLICK_DELAY = 350;
+    let clickCount = 0;
+    let clickTimer: number | undefined;
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+
+    const syncLabel = () => {
+      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      const nextTheme = isDark ? "clair" : "sombre";
+      themeToggle.setAttribute(
+        "aria-label",
+        desktopQuery.matches
+          ? `Activer le thème ${nextTheme}`
+          : `Accueil — Jeune Chrétien. Double-cliquez pour activer le thème ${nextTheme}.`
+      );
+    };
+    syncLabel();
+    desktopQuery.addEventListener("change", syncLabel);
+
+    const toggleTheme = () => {
+      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      if (isDark) {
+        document.documentElement.removeAttribute("data-theme");
+      } else {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+      try {
+        localStorage.setItem("theme", isDark ? "light" : "dark");
+      } catch {
+        // localStorage indisponible (navigation privée, quota…) — le
+        // thème s'applique quand même pour la session en cours.
+      }
+      syncLabel();
+    };
+
+    themeToggle.addEventListener("click", (event) => {
+      const mouseEvent = event as MouseEvent;
+      if (
+        mouseEvent.button !== 0 ||
+        mouseEvent.metaKey ||
+        mouseEvent.ctrlKey ||
+        mouseEvent.shiftKey ||
+        mouseEvent.altKey
+      ) {
+        return;
+      }
+      event.preventDefault();
+
+      if (desktopQuery.matches) {
+        toggleTheme();
+        return;
+      }
+
+      clickCount++;
+      if (clickCount === 1) {
+        clickTimer = window.setTimeout(() => {
+          clickCount = 0;
+          window.location.href = "/";
+        }, DOUBLE_CLICK_DELAY);
+      } else {
+        window.clearTimeout(clickTimer);
+        clickCount = 0;
+        toggleTheme();
+      }
+    });
+  }
+
+  const header = document.getElementById("site-header");
+  const toggle = document.getElementById("menu-toggle");
+  const menu = document.getElementById("mobile-menu");
+
+  if (header) {
+    const onScroll = () => {
+      header.classList.toggle("is-scrolled", window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+  }
+
+  if (toggle && menu) {
+    const focusableSelector =
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    let lastFocused: HTMLElement | null = null;
+
+    const onKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMenu();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusables = Array.from(
+        menu.querySelectorAll<HTMLElement>(focusableSelector)
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    function openMenu() {
+      lastFocused = document.activeElement as HTMLElement;
+      menu!.classList.add("is-open");
+      toggle!.setAttribute("aria-expanded", "true");
+      toggle!.setAttribute("aria-label", "Fermer le menu");
+      document.body.style.overflow = "hidden";
+      menu!.querySelector<HTMLElement>(focusableSelector)?.focus();
+      document.addEventListener("keydown", onKeydown);
+    }
+
+    function closeMenu() {
+      menu!.classList.remove("is-open");
+      toggle!.setAttribute("aria-expanded", "false");
+      toggle!.setAttribute("aria-label", "Ouvrir le menu");
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKeydown);
+      (lastFocused ?? toggle)?.focus();
+    }
+
+    toggle.addEventListener("click", () => {
+      const isOpen = toggle.getAttribute("aria-expanded") === "true";
+      isOpen ? closeMenu() : openMenu();
+    });
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth >= 1024 && menu.classList.contains("is-open")) {
+        closeMenu();
+      }
+    });
+  }
+</script>

@@ -1,0 +1,201 @@
+---
+import { Image } from "astro:assets";
+import webinaireSalonTelegram from "../assets/photos/webinaire-salon-telegram.png";
+import campagneCjcj from "../assets/photos/campagne-cjcj.jpg";
+import formationLeadership from "../assets/photos/20240428-ART_1577.jpg";
+import projetAfterchurch from "../assets/photos/projet-afterchurch.jpg";
+
+const initiatives = [
+  {
+    type: "Webinaire",
+    title: "L'autonomisation du jeune chrétien à l'ère du digital",
+    status: "28 juillet 2022",
+    ratio: "1/1",
+    span: 7,
+    image: webinaireSalonTelegram,
+    imageAlt:
+      "Affiche du Salon Telegram « L'autonomisation du jeune chrétien à l'ère du digital », avec Joël Arsène Noumonvi, Président de l'AB-Bénin, jeudi 28 juillet 2022 de 19h00 à 20h30.",
+  },
+  {
+    type: "Formation",
+    title: "Développer son leadership",
+    status: "28 avril 2024",
+    ratio: "4/5",
+    span: 5,
+    image: formationLeadership,
+    imageAlt:
+      "Un jeune homme agenouillé sur une natte, en pleine prise de parole animée devant un groupe assis sous les palmiers, lors d'une session « After Church ».",
+  },
+  {
+    type: "Campagne",
+    title: "Célébrons Jésus, célébrons la jeunesse",
+    status: "#CJCJ",
+    ratio: "1/1",
+    span: 5,
+    image: campagneCjcj,
+    imageAlt:
+      "Affiche de la campagne #CJCJ « Célébrons Jésus, célébrons la jeunesse » de Jeune Chrétien, sur fond rouge avec guirlandes et étoiles dorées.",
+  },
+  {
+    type: "Événement",
+    title: "AfterChurch – 1ère édition",
+    status: "28 avril 2024",
+    ratio: "3/2",
+    span: 7,
+    image: projetAfterchurch,
+    imageAlt:
+      "Un groupe de jeunes assis en cercle sur une natte, en pleine discussion sous les palmiers, lors de la première édition d'AfterChurch.",
+  },
+] as const;
+---
+
+<section id="nos-initiatives" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group flex flex-col items-start gap-6">
+    <p class="kicker">Nos initiatives</p>
+    <h2 class="max-w-xl">Des idées qui deviennent des actions.</h2>
+    <p class="max-w-xl text-ink/70">
+      Webinaires, formations, campagnes, rencontres, projets et initiatives
+      communautaires : nous créons des occasions d'apprendre, de se
+      rencontrer et d'agir.
+    </p>
+  </div>
+
+  <div class="initiatives-grid mt-12 flex flex-col gap-8 lg:mt-16 lg:grid lg:grid-cols-12 lg:gap-10">
+    {
+      initiatives.map((item) => (
+        <article
+          class="reveal-item initiative-card card-hover"
+          style={`grid-column: span ${item.span} / span ${item.span};`}
+        >
+          <div class="card-hover-media reveal-photo h-full w-full">
+            <Image
+              src={item.image}
+              alt={item.imageAlt}
+              class="h-full w-full object-cover"
+              style={`aspect-ratio: ${item.ratio};`}
+              widths={[300, 500, 700, 1080]}
+              sizes="(min-width: 1024px) 45vw, 90vw"
+              loading="lazy"
+            />
+          </div>
+          <div class="initiative-scrim" aria-hidden="true" />
+          <div class="initiative-overlay">
+            <span class="initiative-type">{item.type}</span>
+            <h3 class="initiative-title">{item.title}</h3>
+            <span class="initiative-status">{item.status}</span>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+
+  <div class="mt-12 lg:mt-16">
+    <a href="/ce-que-nous-faisons" class="cta-text">
+      <span>Découvrir nos initiatives</span>
+      <span class="cta-arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .initiative-card {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .initiative-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / 0.65) 0%,
+      rgb(0 0 0 / 0.25) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  .initiative-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1.25rem;
+    color: #fff;
+  }
+
+  .initiative-type {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.85);
+  }
+
+  .initiative-title {
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+    line-height: 1.25;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .initiative-status {
+    font-size: 0.8125rem;
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  .cta-text {
+    position: relative;
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .cta-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .cta-text:hover,
+  .cta-text:focus-visible {
+    color: var(--color-accent);
+  }
+  .cta-text:hover::after,
+  .cta-text:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .cta-arrow {
+    transition: transform 150ms var(--ease-out-site);
+  }
+  .cta-text:hover .cta-arrow,
+  .cta-text:focus-visible .cta-arrow {
+    transform: translateX(4px);
+  }
+</style>

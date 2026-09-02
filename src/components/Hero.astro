@@ -1,0 +1,147 @@
+---
+import { Image } from "astro:assets";
+import heroCouple from "../assets/photos/hero-couple.png";
+---
+
+<section class="hero-section">
+  <div
+    class="container-content grid gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16"
+  >
+    <div class="reveal-group flex flex-col items-start gap-6 self-center lg:gap-8 lg:self-start lg:pt-24">
+      <p class="hero-kicker">Jeune Chrétien</p>
+      <h1 class="hero-title">
+        <span class="block">Grandir dans la foi.</span>
+        <span class="block">Se développer.</span>
+        <span class="block">Servir.</span>
+      </h1>
+      <p class="max-w-md text-ink/70">
+        Nous aidons les jeunes chrétiens à grandir dans leur foi, développer
+        leur potentiel et s'engager, là où ils sont : en ligne.
+      </p>
+      <div class="flex flex-wrap gap-4">
+        <a href="/qui-sommes-nous" class="btn-primary">Découvrir Jeune Chrétien</a>
+        <a href="/blog" class="btn-secondary">Explorer nos contenus</a>
+      </div>
+    </div>
+
+    <div class="reveal-group hero-media">
+      <Image
+        src={heroCouple}
+        alt="Deux jeunes adultes souriants, un homme et une femme, complices et pouces levés."
+        class="hero-cutout reveal-photo"
+        widths={[400, 600, 800, 1154]}
+        sizes="(min-width: 1024px) 40vw, 70vw"
+        format="png"
+        quality="max"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-section {
+    display: flex;
+    min-height: 85vh;
+    min-height: 85svh;
+  }
+  .hero-section > .container-content {
+    flex: 1;
+  }
+
+  @media (max-width: 63.9375rem) {
+    .hero-section {
+      min-height: 0;
+      padding-block: 3rem;
+    }
+  }
+
+  .hero-kicker {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .hero-title {
+    text-transform: uppercase;
+    font-size: clamp(2rem, 1.3rem + 2vw, 3.25rem);
+    line-height: 1.08;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 26.5625rem) {
+    .hero-title {
+      white-space: normal;
+      text-wrap: balance;
+    }
+  }
+
+  .hero-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20rem;
+  }
+
+  .hero-cutout {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 78vh;
+    max-height: 78svh;
+    object-fit: contain;
+    /* Le hero est visible dès le chargement — un délai + une durée plus
+       longue rendent le mouvement perceptible (sinon il se joue avant
+       même que l'œil ait le temps de le voir). */
+    transition-delay: 150ms;
+    transition-duration: 800ms;
+  }
+
+  @media (max-width: 63.9375rem) {
+    .hero-cutout {
+      max-height: 32rem;
+    }
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--color-accent);
+    transition:
+      filter 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site),
+      outline-color 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+  }
+  .btn-primary:hover {
+    filter: brightness(0.88);
+  }
+  .btn-primary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+  .btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+  .btn-secondary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+</style>

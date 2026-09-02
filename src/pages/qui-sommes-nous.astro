@@ -1,0 +1,41 @@
+---
+// Page statique, prégénérée au build — malgré le passage du site en sortie
+// "server" pour "Parle-nous" (voir astro.config.mjs).
+export const prerender = true;
+
+import Layout from "../layouts/Layout.astro";
+import QuiSommesNousHero from "../components/QuiSommesNousHero.astro";
+import NotreHistoire from "../components/NotreHistoire.astro";
+import NotreEvolution from "../components/NotreEvolution.astro";
+import NotreConstat from "../components/NotreConstat.astro";
+import QuiSommesNousVision from "../components/QuiSommesNousVision.astro";
+import NotreMission from "../components/NotreMission.astro";
+import NosValeurs from "../components/NosValeurs.astro";
+import QuiSommesNousTerrainAction from "../components/QuiSommesNousTerrainAction.astro";
+import ApprocheHolistique from "../components/ApprocheHolistique.astro";
+import NosContributeurs from "../components/NosContributeurs.astro";
+import NotreAmbition from "../components/NotreAmbition.astro";
+import Manifeste from "../components/Manifeste.astro";
+import QuiSommesNousCta from "../components/QuiSommesNousCta.astro";
+---
+
+<Layout
+  title="Qui sommes-nous ? – Jeune Chrétien"
+  description="Jeune Chrétien est une association qui œuvre pour informer, inspirer, former et accompagner les jeunes dans leur foi, leur développement et leur engagement."
+>
+  <main>
+    <QuiSommesNousHero />
+    <NotreHistoire />
+    <NotreEvolution />
+    <NotreConstat />
+    <QuiSommesNousVision />
+    <NotreMission />
+    <NosValeurs />
+    <QuiSommesNousTerrainAction />
+    <ApprocheHolistique />
+    <NosContributeurs />
+    <NotreAmbition />
+    <Manifeste />
+    <QuiSommesNousCta />
+  </main>
+</Layout>

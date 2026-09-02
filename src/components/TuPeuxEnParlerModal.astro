@@ -1,0 +1,807 @@
+---
+// Modale globale « Tu peux en parler », montée une seule fois dans
+// Layout.astro (comme Navbar/Footer). Réutilise intégralement le backend
+// déjà construit pour "Parle-nous" : même endpoint /api/parle-nous, même
+// table Supabase "messages", même espace admin — aucune infrastructure
+// nouvelle. Ouverture depuis n'importe où via :
+//   - window.openTuPeuxEnParler(category?)
+//   - <button data-tpp-open="priere">…</button> (délégation d'événement)
+const categories = [
+  {
+    key: "question",
+    emoji: "💬",
+    title: "Une question",
+    description: "J'aimerais avoir un éclairage sur une question.",
+  },
+  {
+    key: "preoccupation",
+    emoji: "🤍",
+    title: "Une préoccupation",
+    description: "Je traverse une situation dont j'aimerais parler.",
+  },
+  {
+    key: "priere",
+    emoji: "🙏",
+    title: "Une demande de prière",
+    description: "Je souhaite confier une situation ou une personne dans la prière.",
+  },
+  {
+    key: "autre",
+    emoji: "",
+    title: "Autre",
+    description: "Je souhaite simplement partager quelque chose.",
+  },
+] as const;
+---
+
+<button type="button" id="tpp-trigger" class="tpp-floating-button" data-tpp-open="">
+  <span class="tpp-floating-icon" aria-hidden="true">💬</span>
+  <span class="tpp-floating-label">Tu peux en parler</span>
+</button>
+
+<div id="tpp-overlay" class="tpp-overlay" hidden>
+  <div id="tpp-modal" class="tpp-modal" role="dialog" aria-modal="true" aria-labelledby="tpp-title" tabindex="-1">
+    <button type="button" id="tpp-close" class="tpp-close" aria-label="Fermer">
+      <span aria-hidden="true">×</span>
+    </button>
+
+    <div id="tpp-flow">
+      <div id="tpp-step-intro" class="tpp-step">
+        <p class="tpp-kicker">Tu peux en parler</p>
+        <h2 id="tpp-title" class="tpp-title">
+          Une question ? Une préoccupation ? Une demande de prière ?
+        </h2>
+        <p class="tpp-text">
+          Il n'est pas toujours facile de trouver les mots ou la personne à
+          qui parler.
+        </p>
+        <p class="tpp-text">
+          Si tu as une question, une préoccupation ou une demande de prière,
+          tu peux nous l'écrire ici.
+        </p>
+        <p class="tpp-text tpp-text-strong">Tu peux rester anonyme.</p>
+
+        <p class="tpp-label" id="tpp-category-label">Qu'aimerais-tu nous partager ?</p>
+        <div class="tpp-category-grid" aria-labelledby="tpp-category-label">
+          {
+            categories.map((category) => (
+              <button type="button" class="tpp-category-card" data-category={category.key}>
+                {category.emoji && (
+                  <span class="tpp-category-emoji" aria-hidden="true">
+                    {category.emoji}
+                  </span>
+                )}
+                <span class="tpp-category-title">{category.title}</span>
+                <span class="tpp-category-desc">{category.description}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <div id="tpp-step-message" class="tpp-step" hidden>
+        <button type="button" id="tpp-back" class="tpp-back">
+          <span aria-hidden="true">←</span> Retour
+        </button>
+        <p class="tpp-kicker">Ton message</p>
+        <h2 class="tpp-title">Écris-nous</h2>
+        <p class="tpp-text">
+          Tu peux prendre ton temps. Partage uniquement ce que tu souhaites.
+        </p>
+
+        <form id="tpp-form" novalidate>
+          <div class="tpp-honeypot" aria-hidden="true">
+            <label for="tpp-website">Laisser ce champ vide</label>
+            <input type="text" id="tpp-website" name="website" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="tpp-field-group">
+            <label class="tpp-field-label" for="tpp-message">Ton message</label>
+            <textarea
+              id="tpp-message"
+              name="message"
+              class="tpp-textarea"
+              rows="6"
+              placeholder="Écris ici ta question, ta situation ou ton sujet de prière..."
+              maxlength="4000"></textarea>
+          </div>
+
+          <div class="tpp-field-group">
+            <p class="tpp-field-label" id="tpp-anonymity-label">Souhaites-tu rester anonyme ?</p>
+            <div class="tpp-anonymity-options" aria-labelledby="tpp-anonymity-label">
+              <label class="tpp-anonymity-option">
+                <input type="radio" name="tpp-anonymity" value="oui" checked />
+                <span>Oui, je souhaite rester anonyme</span>
+              </label>
+              <label class="tpp-anonymity-option">
+                <input type="radio" name="tpp-anonymity" value="non" />
+                <span>Non, je souhaite laisser mes coordonnées</span>
+              </label>
+            </div>
+            <p class="tpp-hint">
+              Tu n'as pas besoin de donner ton nom ou tes coordonnées pour
+              envoyer ton message.
+            </p>
+
+            <div id="tpp-contact-fields" class="tpp-contact-fields" hidden>
+              <div class="tpp-field-group">
+                <label class="tpp-field-label" for="tpp-name">Nom — facultatif</label>
+                <input type="text" id="tpp-name" name="name" class="tpp-input" autocomplete="name" />
+              </div>
+              <div class="tpp-field-group">
+                <label class="tpp-field-label" for="tpp-email">Adresse e-mail — facultatif</label>
+                <input type="email" id="tpp-email" name="email" class="tpp-input" autocomplete="email" />
+              </div>
+              <p class="tpp-hint">
+                Si tu souhaites recevoir une réponse, tu peux laisser ton
+                adresse e-mail.
+              </p>
+            </div>
+          </div>
+
+          <p id="tpp-error" class="tpp-error" role="alert" hidden></p>
+
+          <button type="submit" class="tpp-submit" id="tpp-submit">Envoyer</button>
+          <p class="tpp-hint tpp-submit-hint">
+            Ton message sera transmis à l'équipe habilitée de Jeune Chrétien
+            afin d'être lu avec attention.
+          </p>
+        </form>
+      </div>
+
+      <div id="tpp-step-confirmation" class="tpp-step" hidden>
+        <h2 class="tpp-title">Merci de nous avoir écrit.</h2>
+        <p class="tpp-text">Ton message a bien été reçu.</p>
+        <p class="tpp-text" id="tpp-confirmation-line"></p>
+        <p class="tpp-alone">Tu n'es pas seul.</p>
+        <button type="button" id="tpp-confirmation-close" class="tpp-submit">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* --- Bouton flottant ---------------------------------------------- */
+  .tpp-floating-button {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-inline: 1.125rem;
+    padding-block: 0.75rem;
+    border: none;
+    border-radius: 9999px;
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    box-shadow: 0 8px 24px -6px rgb(7 5 0 / 0.35);
+    cursor: pointer;
+    transition:
+      filter 150ms var(--ease-out-site),
+      transform 150ms var(--ease-out-site);
+  }
+  .tpp-floating-button:hover {
+    filter: brightness(0.92);
+    transform: translateY(-1px);
+  }
+  .tpp-floating-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  .tpp-floating-icon {
+    font-size: 1.125rem;
+    line-height: 1;
+  }
+  @media (max-width: 26rem) {
+    .tpp-floating-label {
+      display: none;
+    }
+    .tpp-floating-button {
+      padding: 0.75rem;
+    }
+  }
+
+  /* --- Overlay & modale ------------------------------------------------ */
+  .tpp-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background-color: rgb(7 5 0 / 0.6);
+    opacity: 0;
+    transition: opacity 200ms var(--ease-out-site);
+  }
+  .tpp-overlay.is-open {
+    opacity: 1;
+  }
+
+  .tpp-modal {
+    position: relative;
+    width: 100%;
+    max-width: 32rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem 1.75rem;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    box-shadow: 0 24px 64px -12px rgb(7 5 0 / 0.4);
+    transform: translateY(10px);
+    opacity: 0;
+    /* Le focus programmatique à l'ouverture (accessibilité) ne doit pas
+       afficher l'anneau par défaut du navigateur sur tout le conteneur —
+       anneau discret assorti au design system, comme pour la confirmation
+       de QuiSommesNousHero.astro. */
+    outline: none;
+    transition:
+      transform 250ms var(--ease-out-site),
+      opacity 250ms var(--ease-out-site);
+  }
+  .tpp-modal:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 6px;
+  }
+  @media (min-width: 40rem) {
+    .tpp-modal {
+      padding: 2.5rem;
+    }
+  }
+  .tpp-overlay.is-open .tpp-modal {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .tpp-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 9999px;
+    background: none;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color 150ms var(--ease-out-site),
+      color 150ms var(--ease-out-site);
+  }
+  .tpp-close:hover {
+    background-color: color-mix(in srgb, var(--color-ink) 8%, transparent);
+    color: var(--color-ink);
+  }
+  .tpp-close:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* --- Contenu partagé --------------------------------------------- */
+  .tpp-kicker {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .tpp-title {
+    margin-bottom: 0.875rem;
+    font-size: clamp(1.25rem, 1.1rem + 1vw, 1.625rem);
+    line-height: 1.25;
+    padding-right: 1.5rem;
+  }
+
+  .tpp-text {
+    margin-bottom: 0.625rem;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .tpp-text-strong {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .tpp-label {
+    margin-top: 1.5rem;
+    margin-bottom: 0.875rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  /* --- Étapes --------------------------------------------------------- */
+  .tpp-step {
+    opacity: 0;
+    transition: opacity 200ms var(--ease-out-site);
+  }
+  .tpp-step.is-active {
+    opacity: 1;
+  }
+
+  .tpp-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-bottom: 1rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .tpp-back:hover {
+    color: var(--color-ink);
+  }
+
+  /* --- Catégories ------------------------------------------------------ */
+  .tpp-category-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  @media (min-width: 30rem) {
+    .tpp-category-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .tpp-category-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 1.125rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site);
+  }
+  .tpp-category-card:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+  .tpp-category-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .tpp-category-emoji {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  .tpp-category-title {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+  .tpp-category-desc {
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  /* --- Champs --------------------------------------------------------- */
+  .tpp-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .tpp-field-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .tpp-textarea,
+  .tpp-input {
+    width: 100%;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    transition:
+      border-color 150ms var(--ease-out-site),
+      box-shadow 150ms var(--ease-out-site);
+  }
+  .tpp-textarea {
+    resize: vertical;
+    min-height: 9rem;
+  }
+  .tpp-textarea:focus,
+  .tpp-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+
+  .tpp-hint {
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+  }
+
+  .tpp-honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+  }
+
+  /* --- Anonymat --------------------------------------------------------- */
+  .tpp-anonymity-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-bottom: 0.625rem;
+  }
+  .tpp-anonymity-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+  .tpp-anonymity-option input[type="radio"] {
+    accent-color: var(--color-accent);
+    width: 1.0625rem;
+    height: 1.0625rem;
+  }
+
+  .tpp-contact-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* --- Erreurs --------------------------------------------------------- */
+  .tpp-error {
+    margin-bottom: 1rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, #b3261e 8%, transparent);
+    color: #8c1d17;
+    font-size: 0.875rem;
+  }
+  :root[data-theme="dark"] .tpp-error {
+    color: #ffb4ab;
+    background-color: color-mix(in srgb, #ffb4ab 12%, transparent);
+  }
+
+  /* --- Bouton principal --------------------------------------------- */
+  .tpp-submit {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    padding-block: 0.8125rem;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: filter 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .tpp-submit:hover {
+    filter: brightness(0.9);
+  }
+  .tpp-submit:focus-visible {
+    outline-color: var(--color-accent);
+  }
+  .tpp-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .tpp-submit-hint {
+    margin-top: 0.75rem;
+    text-align: center;
+  }
+
+  /* --- Confirmation ------------------------------------------------------ */
+  .tpp-alone {
+    margin: 1.25rem 0 1.5rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tpp-overlay,
+    .tpp-modal,
+    .tpp-step,
+    .tpp-floating-button {
+      transition: none !important;
+    }
+  }
+</style>
+
+<script>
+  const overlay = document.getElementById("tpp-overlay") as HTMLElement | null;
+  const modal = document.getElementById("tpp-modal") as HTMLElement | null;
+  const closeButton = document.getElementById("tpp-close");
+  const backButton = document.getElementById("tpp-back");
+
+  const stepIntro = document.getElementById("tpp-step-intro") as HTMLElement | null;
+  const stepMessage = document.getElementById("tpp-step-message") as HTMLElement | null;
+  const stepConfirmation = document.getElementById("tpp-step-confirmation") as HTMLElement | null;
+
+  const form = document.getElementById("tpp-form") as HTMLFormElement | null;
+  const messageInput = document.getElementById("tpp-message") as HTMLTextAreaElement | null;
+  const nameInput = document.getElementById("tpp-name") as HTMLInputElement | null;
+  const emailInput = document.getElementById("tpp-email") as HTMLInputElement | null;
+  const websiteInput = document.getElementById("tpp-website") as HTMLInputElement | null;
+  const contactFields = document.getElementById("tpp-contact-fields") as HTMLElement | null;
+  const submitButton = document.getElementById("tpp-submit") as HTMLButtonElement | null;
+  const formError = document.getElementById("tpp-error");
+  const confirmationLine = document.getElementById("tpp-confirmation-line");
+  const confirmationClose = document.getElementById("tpp-confirmation-close");
+
+  const VALID_CATEGORIES = ["question", "preoccupation", "priere", "autre"];
+
+  let selectedCategory: string | null = null;
+  let lastFocusedElement: HTMLElement | null = null;
+
+  function showStep(step: HTMLElement | null) {
+    [stepIntro, stepMessage, stepConfirmation].forEach((s) => {
+      if (!s) return;
+      const isTarget = s === step;
+      s.hidden = !isTarget;
+      s.classList.toggle("is-active", isTarget);
+    });
+  }
+
+  function resetForm() {
+    selectedCategory = null;
+    form?.reset();
+    if (contactFields) contactFields.hidden = true;
+    if (formError) {
+      formError.hidden = true;
+      formError.textContent = "";
+    }
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Envoyer";
+    }
+    document.querySelectorAll<HTMLButtonElement>(".tpp-category-card").forEach((card) => {
+      card.setAttribute("aria-pressed", "false");
+    });
+  }
+
+  function getFocusable(): HTMLElement[] {
+    if (!modal) return [];
+    return Array.from(
+      modal.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter((el) => el.offsetParent !== null);
+  }
+
+  function onKeydown(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+      return;
+    }
+    if (event.key !== "Tab") return;
+
+    const focusable = getFocusable();
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function open(category?: string) {
+    if (!overlay || !modal) return;
+    lastFocusedElement = document.activeElement as HTMLElement | null;
+
+    // Marque que le visiteur a interagi avec la modale pendant cette
+    // visite (quelle que soit la façon dont elle a été ouverte) — les
+    // déclenchements automatiques au scroll (voir
+    // AutoOpenTuPeuxEnParler.astro) s'appuient sur ce marqueur pour ne
+    // jamais rouvrir la modale à quelqu'un qui l'a déjà vue.
+    try {
+      sessionStorage.setItem("tpp-interacted", "1");
+    } catch {
+      // sessionStorage indisponible — tant pis, pas bloquant.
+    }
+
+    resetForm();
+
+    if (category && VALID_CATEGORIES.includes(category)) {
+      selectedCategory = category;
+      showStep(stepMessage);
+    } else {
+      showStep(stepIntro);
+    }
+
+    overlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => overlay.classList.add("is-open"));
+
+    document.addEventListener("keydown", onKeydown);
+    window.setTimeout(() => modal.focus(), 50);
+  }
+
+  function close() {
+    if (!overlay) return;
+    overlay.classList.remove("is-open");
+    document.removeEventListener("keydown", onKeydown);
+    document.body.style.overflow = "";
+
+    window.setTimeout(() => {
+      overlay.hidden = true;
+      resetForm();
+      showStep(stepIntro);
+    }, 220);
+
+    lastFocusedElement?.focus();
+  }
+
+  // API globale — exemple : window.openTuPeuxEnParler("priere")
+  (window as typeof window & { openTuPeuxEnParler?: (category?: string) => void }).openTuPeuxEnParler = open;
+
+  // Délégation : n'importe quel élément [data-tpp-open] ailleurs sur le
+  // site (présent maintenant ou ajouté plus tard) ouvre la modale.
+  document.addEventListener("click", (event) => {
+    const el = (event.target as HTMLElement)?.closest<HTMLElement>("[data-tpp-open]");
+    if (!el) return;
+    event.preventDefault();
+    const category = el.dataset.tppOpen;
+    open(category && category.length > 0 ? category : undefined);
+  });
+
+  closeButton?.addEventListener("click", close);
+  confirmationClose?.addEventListener("click", close);
+  overlay?.addEventListener("click", (event) => {
+    if (event.target === overlay) close();
+  });
+
+  backButton?.addEventListener("click", () => {
+    showStep(stepIntro);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>(".tpp-category-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      selectedCategory = card.dataset.category ?? null;
+      document.querySelectorAll<HTMLButtonElement>(".tpp-category-card").forEach((c) => {
+        c.setAttribute("aria-pressed", String(c === card));
+      });
+      showStep(stepMessage);
+      messageInput?.focus();
+    });
+  });
+
+  document.querySelectorAll<HTMLInputElement>('input[name="tpp-anonymity"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (!contactFields) return;
+      contactFields.hidden = !(radio.value === "non" && radio.checked);
+    });
+  });
+
+  function showError(message: string) {
+    if (!formError) return;
+    formError.textContent = message;
+    formError.hidden = false;
+  }
+  function clearError() {
+    if (!formError) return;
+    formError.hidden = true;
+    formError.textContent = "";
+  }
+  function isPlausibleEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearError();
+
+    if (!selectedCategory) {
+      showError("Choisis d'abord ce que tu souhaites partager.");
+      return;
+    }
+
+    const message = messageInput?.value.trim() ?? "";
+    if (!message) {
+      showError("Ajoute un message avant d'envoyer.");
+      messageInput?.focus();
+      return;
+    }
+
+    const anonymityChoice =
+      document.querySelector<HTMLInputElement>('input[name="tpp-anonymity"]:checked')?.value ?? "oui";
+    const isAnonymous = anonymityChoice !== "non";
+
+    const emailValue = emailInput?.value.trim() ?? "";
+    if (!isAnonymous && emailValue && !isPlausibleEmail(emailValue)) {
+      showError("L'adresse e-mail ne semble pas valide.");
+      emailInput?.focus();
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Envoi en cours…";
+    }
+
+    try {
+      const response = await fetch("/api/parle-nous", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: selectedCategory,
+          message,
+          isAnonymous,
+          name: isAnonymous ? "" : nameInput?.value ?? "",
+          email: isAnonymous ? "" : emailValue,
+          website: websiteInput?.value ?? "",
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        showError(
+          data?.message ??
+            "Une erreur est survenue. Ton message n'a pas pu être envoyé. Tu peux réessayer."
+        );
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Envoyer";
+        }
+        return;
+      }
+
+      if (confirmationLine) {
+        confirmationLine.textContent =
+          selectedCategory === "priere"
+            ? "Nous allons porter ta demande dans la prière."
+            : "Ton message sera lu avec attention par l'équipe de Jeune Chrétien.";
+      }
+      showStep(stepConfirmation);
+    } catch {
+      showError("Nous n'avons pas pu envoyer ton message. Vérifie ta connexion et réessaie.");
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Envoyer";
+      }
+    }
+  });
+</script>

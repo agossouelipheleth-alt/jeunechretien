@@ -1,0 +1,136 @@
+---
+// Reprend la logique des 4 piliers de NotreApproche.astro (homepage) —
+// mêmes noms, même esprit numéroté sur fond sombre fixe — pour créer une
+// continuité entre les deux pages. Pas de collage photo ici : cette
+// version reste typographique, dans la continuité de la section Vision
+// qui précède (même fond sombre fixe, pas de rupture entre les deux).
+const items = [
+  {
+    number: "01",
+    title: "Informer",
+    description:
+      "Donner accès à des contenus pertinents sur la foi, la jeunesse et les réalités qui la concernent.",
+  },
+  {
+    number: "02",
+    title: "Inspirer",
+    description:
+      "Mettre en avant des témoignages, des parcours et des réflexions qui encouragent à avancer.",
+  },
+  {
+    number: "03",
+    title: "Former",
+    description:
+      "Proposer des ressources et des initiatives permettant de développer les connaissances et les compétences.",
+  },
+  {
+    number: "04",
+    title: "Accompagner",
+    description: "Créer des espaces d'échange, de conseil et de progression.",
+  },
+] as const;
+---
+
+<section id="notre-mission" class="mission-section">
+  <div class="container-content px-4 py-24 sm:px-6 lg:py-32">
+    <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+      <p class="kicker">Notre mission</p>
+      <h2 class="mission-title w-full">
+        Informer. Inspirer. Former. Accompagner.
+      </h2>
+      <div class="flex w-full flex-col gap-4 mission-text">
+        <p>
+          À travers une présence principalement numérique, Jeune Chrétien
+          propose des contenus, des ressources et des initiatives destinés à
+          répondre aux réalités des jeunes chrétiens.
+        </p>
+        <p>
+          Notre objectif est de contribuer à leur affermissement spirituel
+          tout en les aidant à mieux comprendre et préparer leur avenir.
+        </p>
+      </div>
+    </div>
+
+    <ul class="mission-list reveal-group mx-auto mt-16 max-w-2xl lg:mt-20">
+      {
+        items.map((item) => (
+          <li class="mission-item">
+            <span class="mission-number" aria-hidden="true">
+              {item.number}
+            </span>
+            <div>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .mission-section {
+    /* Fond fixe, comme NotreApproche.astro (homepage) et la section
+       Vision juste au-dessus : les deux forment un même "chapitre
+       sombre" continu sur cette page. */
+    background-color: #070500;
+    color: #fff;
+    border-top: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-on-dark);
+  }
+
+  .mission-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .mission-text {
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  .mission-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mission-item {
+    display: flex;
+    gap: 1.5rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid rgb(255 255 255 / 0.14);
+    text-align: left;
+  }
+  .mission-item:last-child {
+    border-bottom: 1px solid rgb(255 255 255 / 0.14);
+  }
+
+  .mission-number {
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: var(--color-accent-on-dark);
+  }
+
+  .mission-item h3 {
+    font-weight: 600;
+    margin-bottom: 0.375rem;
+  }
+
+  .mission-item p {
+    color: rgb(255 255 255 / 0.65);
+  }
+</style>

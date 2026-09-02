@@ -1,0 +1,141 @@
+---
+import { Image } from "astro:assets";
+import constatSpirituel from "../assets/photos/constat-spirituel-priere.png";
+import constatAcademique from "../assets/photos/constat-academique.jpg";
+import constatSocioPro from "../assets/photos/constat-socio-professionnel.jpg";
+
+const dimensions = [
+  {
+    label: "Spirituel",
+    image: constatSpirituel,
+    alt: "Une jeune femme en prière, mains jointes, assise dans son salon près d'une croix murale.",
+  },
+  {
+    label: "Académique",
+    image: constatAcademique,
+    alt: "Une jeune diplômée en toge et toque, fière de son parcours académique.",
+  },
+  {
+    label: "Socio-professionnel",
+    image: constatSocioPro,
+    alt: "Un jeune homme au travail dans un atelier de menuiserie, concentré sur son ouvrage.",
+  },
+] as const;
+---
+
+<section id="notre-constat" class="py-24 lg:py-32">
+  <div class="container-content px-4 sm:px-6">
+    <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+      <p class="kicker">Notre constat</p>
+      <h2 class="constat-title w-full">
+        La vie d'un jeune ne se résume pas à une seule dimension.
+      </h2>
+      <div class="flex w-full flex-col gap-4 text-ink/70">
+        <p>
+          Les jeunes chrétiens sont confrontés à des réalités qui touchent
+          aussi bien leur foi que leurs études, leur orientation, leur
+          insertion professionnelle et leurs conditions de vie.
+        </p>
+        <p>
+          Ces différentes dimensions ne sont pas isolées les unes des autres.
+          Elles influencent leurs choix, leurs parcours et leur avenir.
+        </p>
+        <p>
+          C'est pourquoi nous pensons que l'accompagnement de la jeunesse
+          chrétienne doit également prendre en compte son devenir académique
+          et socio-professionnel.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="constat-triptych mt-16 lg:mt-20">
+    {
+      dimensions.map((dimension) => (
+        <div class="constat-panel reveal-item">
+          <Image
+            src={dimension.image}
+            alt={dimension.alt}
+            class="constat-photo h-full w-full reveal-photo"
+            widths={[300, 500, 700, 1000]}
+            sizes="(min-width: 64rem) 33vw, 100vw"
+          />
+          <span class="constat-scrim" aria-hidden="true" />
+          <span class="constat-label">{dimension.label}</span>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .constat-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  /* Composition unique en trois panneaux accolés (pas de gap) — pleine
+     largeur, en dehors du container-content, pour une "grande zone
+     visuelle" qui rompt avec le rythme des sections contenues. */
+  .constat-triptych {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 64rem) {
+    .constat-triptych {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .constat-panel {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
+
+  .constat-photo {
+    display: block;
+    object-fit: cover;
+  }
+  @media (min-width: 64rem) {
+    .constat-panel {
+      aspect-ratio: 3 / 4;
+    }
+  }
+
+  .constat-scrim {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 0.32);
+    pointer-events: none;
+  }
+
+  .constat-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.625rem);
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+</style>

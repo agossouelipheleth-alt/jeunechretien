@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — Jeune Chrétien
+ * Source: brief projet (cahier de conception validé).
+ * Fond du site toujours blanc. Violet et noir seuls autorisés en texte
+ * directement sur blanc ; les autres couleurs de catégorie s'utilisent
+ * en aplat de badge avec texte sombre par-dessus, jamais en texte sur blanc.
+ */
+@theme {
+  /* Couleurs */
+  --color-accent: #660b6e; /* violet — liens, CTA, focus */
+  --color-ink: #070500; /* noir — texte / logo */
+  --color-accent-on-dark: #d8aee3; /* violet éclairci — accent sur fond sombre (le violet standard n'a pas assez de contraste sur --color-ink) */
+  --color-category-temoignages: #ce30dd; /* magenta */
+  --color-category-jeunesse: #e56399; /* rose */
+  --color-category-carriere: #ffaf03; /* orange */
+  --color-category-societe: #ffd37c; /* pêche */
+  --color-category-developpement: #73eea0; /* menthe */
+  --color-category-foi: #660b6e; /* violet — alias de l'accent */
+
+  /* Typographie */
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Jost", ui-sans-serif, system-ui, sans-serif;
+
+  /* Rayons — sobres, 8–10px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.625rem; /* 10px */
+
+  /* Ombres — très légères, bordures fines privilégiées */
+  --shadow-soft: 0 2px 8px 0 rgb(7 5 0 / 0.06);
+
+  /* Mouvement */
+  --ease-out-site: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Breakpoints (aligné sur l'échelle validée) */
+  --breakpoint-xs: 23.4375rem; /* 375px */
+  --breakpoint-sm: 40rem; /* 640px */
+  --breakpoint-md: 48rem; /* 768px */
+  --breakpoint-lg: 64rem; /* 1024px */
+  --breakpoint-xl: 80rem; /* 1280px */
+  --breakpoint-2xl: 96rem; /* 1536px */
+
+  /* Largeur de contenu */
+  --container-content: 75rem; /* ~1200px */
+
+  /* Fond alternatif — rupture visuelle ponctuelle (le fond du site reste
+     blanc par défaut ; cette teinte n'est utilisée que pour une section
+     qui a explicitement besoin de se distinguer). */
+  --color-surface-alt: #f8f6fa;
+}
+
+/*
+ * Mode sombre — déclenché par le logo dans le header (cf. Navbar.astro),
+ * état posé en attribut data-theme sur <html> et mémorisé en
+ * localStorage (voir le script inline dans Layout.astro qui applique cet
+ * attribut avant le premier paint, sans jamais se baser sur
+ * prefers-color-scheme : le clair est toujours le défaut).
+ *
+ * --color-ink, --color-accent et --color-surface-alt sont déjà déclarés
+ * plus haut dans @theme (valeurs claires) ; on les redéfinit ici pour le
+ * thème sombre. Ces redéfinitions ne sont pas dans une @layer, donc elles
+ * l'emportent sur celles de @theme (qui vit dans la layer interne de
+ * Tailwind) quel que soit l'ordre des règles.
+ *
+ * --color-ink sert de couleur de TEXTE réactive un peu partout (y
+ * compris via les utilitaires Tailwind text-ink/bg-ink/border-ink déjà
+ * utilisés dans les composants) — mais certains fonds volontairement
+ * sombres même en thème clair (section "Notre approche", menu mobile)
+ * doivent rester fixes : ils utilisent une valeur littérale plutôt que
+ * var(--color-ink), précisément pour ne pas basculer avec le thème.
+ */
+:root {
+  --color-bg: #ffffff;
+  --color-border: rgb(7 5 0 / 0.1);
+  /* Couleur de texte à utiliser sur un aplat plein utilisant --color-ink
+     ou --color-accent (boutons pleins, etc.) — blanc en clair ; en
+     sombre, --color-ink et --color-accent s'éclaircissent, donc le texte
+     par-dessus doit repasser sombre pour rester lisible. */
+  --color-on-fill: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  --color-ink: #eeeeee;
+  --color-accent: #c77ed0;
+  --color-bg: #15161b;
+  --color-surface-alt: #1c1e25;
+  --color-border: #2d2f3a;
+  --color-on-fill: #15161b;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background-color: var(--color-bg);
+    scroll-behavior: smooth;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  /* Échelle fluide — hiérarchie display / H2 / H3 (brief : clamp(), pas de sauts de taille abrupts). */
+  h1 {
+    font-size: clamp(2rem, 1.3rem + 2.8vw, 3.5rem);
+    line-height: 1.1;
+  }
+  h2 {
+    font-size: clamp(1.5rem, 1.25rem + 1.2vw, 2.25rem);
+    line-height: 1.2;
+  }
+  h3 {
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
+    line-height: 1.3;
+    font-weight: 500;
+  }
+
+  /* Respecte les préférences de mouvement réduit du système. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Fondu au bascule du thème — règle volontairement large et peu
+   spécifique : tout composant qui déclare son propre `transition`
+   (boutons, liens…) le remplace sans conflit, ce qui est le comportement
+   voulu. La règle ci-dessus (prefers-reduced-motion) s'applique aussi à
+   celle-ci (transition-duration forcé à 0.01ms), donc le bascule reste
+   instantané pour les utilisateurs qui ont demandé moins de mouvement. */
+*,
+*::before,
+*::after {
+  transition:
+    background-color 300ms var(--ease-out-site),
+    color 300ms var(--ease-out-site),
+    border-color 300ms var(--ease-out-site);
+}
+
+@utility container-content {
+  width: 100%;
+  max-width: var(--container-content);
+  margin-inline: auto;
+}
+
+/*
+ * Apparition au scroll (îlot JS partagé, cf. Layout.astro) — un groupe
+ * révèle ses enfants directs en fondu + léger déplacement, avec un
+ * décalage en cascade. Durée alignée sur le token "400ms apparition de
+ * section" du brief.
+ */
+@layer components {
+  .reveal-group > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 1950ms var(--ease-out-site),
+      transform 1950ms var(--ease-out-site);
+  }
+  .reveal-group.is-visible > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-group.is-visible > *:nth-child(1) {
+    transition-delay: 0ms;
+  }
+  .reveal-group.is-visible > *:nth-child(2) {
+    transition-delay: 390ms;
+  }
+  .reveal-group.is-visible > *:nth-child(3) {
+    transition-delay: 780ms;
+  }
+  .reveal-group.is-visible > *:nth-child(4) {
+    transition-delay: 1170ms;
+  }
+  .reveal-group.is-visible > *:nth-child(5) {
+    transition-delay: 1560ms;
+  }
+  .reveal-group.is-visible > *:nth-child(6) {
+    transition-delay: 1950ms;
+  }
+
+  /* Variante pour un élément révélé seul (ex. carte dans une grille) plutôt
+     qu'un groupe d'enfants — évite qu'un très grand conteneur (donc un
+     seuil de 15% élevé en pixels) retarde l'apparition. */
+  .reveal-item {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 1950ms var(--ease-out-site),
+      transform 1950ms var(--ease-out-site);
+  }
+  .reveal-item.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Marqueur optionnel pour l'élément photo à l'intérieur d'un
+     reveal-group/reveal-item (enfant direct ou imbriqué, ex. dans une
+     carte) : ajoute un zoom photographique très subtil (1.04 → 1) à
+     l'apparition, en plus du fondu + translation hérités. */
+  .reveal-group .reveal-photo,
+  .reveal-item.reveal-photo,
+  .reveal-item .reveal-photo {
+    transform: translateY(16px) scale(1.04);
+    transition: transform 1950ms var(--ease-out-site);
+  }
+  .reveal-group.is-visible .reveal-photo,
+  .reveal-item.reveal-photo.is-visible,
+  .reveal-item.is-visible .reveal-photo {
+    transform: translateY(0) scale(1);
+  }
+
+  /* Carte interactive (grille de contenus) : léger déplacement de l'image,
+     changement subtil de contraste — jamais de rebond ni d'effet flashy. */
+  .card-hover {
+    transition: box-shadow 250ms var(--ease-out-site);
+  }
+  .card-hover:hover,
+  .card-hover:focus-within {
+    box-shadow: var(--shadow-soft);
+  }
+  .card-hover .card-hover-media {
+    overflow: hidden;
+  }
+  .card-hover .card-hover-media img,
+  .card-hover .card-hover-media .media-placeholder {
+    transition: transform 400ms var(--ease-out-site);
+  }
+  .card-hover:hover .card-hover-media img,
+  .card-hover:hover .card-hover-media .media-placeholder {
+    transform: scale(1.035);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-hover:hover .card-hover-media img,
+    .card-hover:hover .card-hover-media .media-placeholder {
+      transform: none;
+    }
+  }
+}

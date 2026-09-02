@@ -1,0 +1,103 @@
+---
+import { Image } from "astro:assets";
+import pourquoiPhoto from "../assets/photos/pourquoi-narcisse.png";
+---
+
+<section id="pourquoi" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
+    <div class="reveal-group flex flex-col items-start gap-6 lg:order-last">
+      <p class="kicker">Pourquoi Jeune Chrétien ?</p>
+      <h2 class="max-w-xl">
+        Le numérique est aussi un lieu où se construit la jeunesse.
+      </h2>
+      <div class="flex max-w-xl flex-col gap-4 text-ink/70">
+        <p>
+          Aujourd'hui, les jeunes s'informent, apprennent, échangent, se
+          forment et construisent leur vision du monde en ligne.
+        </p>
+        <p>
+          Nous croyons que cet espace peut aussi être un lieu de foi, de
+          réflexion, de formation et de transmission.
+        </p>
+        <p>
+          Jeune Chrétien veut y apporter une présence chrétienne pertinente,
+          accessible et proche des réalités de la jeunesse.
+        </p>
+      </div>
+      <a href="/qui-sommes-nous" class="cta-text">
+        <span>Comprendre notre vision</span>
+        <span class="cta-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="reveal-group lg:order-first">
+      <Image
+        src={pourquoiPhoto}
+        alt="Un jeune homme les yeux fermés, tenant une Bible entre ses mains, en signe de recueillement."
+        class="pourquoi-photo w-full rounded-lg object-cover reveal-photo"
+        widths={[400, 640, 800, 1122]}
+        sizes="(min-width: 1024px) 50vw, 100vw"
+        loading="eager"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  /* Cette section arrive tôt dans la page — délai + durée plus longs pour
+     que le mouvement reste perceptible. */
+  .pourquoi-photo {
+    transition-delay: 100ms;
+    transition-duration: 700ms;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .cta-text {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .cta-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .cta-text:hover,
+  .cta-text:focus-visible {
+    color: var(--color-accent);
+  }
+  .cta-text:hover::after,
+  .cta-text:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .cta-arrow {
+    transition: transform 150ms var(--ease-out-site);
+  }
+  .cta-text:hover .cta-arrow,
+  .cta-text:focus-visible .cta-arrow {
+    transform: translateX(4px);
+  }
+</style>

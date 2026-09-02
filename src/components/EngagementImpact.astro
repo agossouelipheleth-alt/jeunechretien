@@ -1,0 +1,82 @@
+---
+import { Image } from "astro:assets";
+import engagementPhoto from "../assets/photos/engagement-impact-nettoyage.png";
+
+const activites = [
+  "Campagnes de sensibilisation",
+  "Actions sociales",
+  "Bénévolat",
+  "Projets communautaires",
+  "Initiatives numériques",
+  "Mobilisations",
+] as const;
+---
+
+<section id="engagement-impact" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">06 – Engagement & impact</p>
+    <h2 class="engagement-title w-full">Ne pas seulement être inspiré. Agir.</h2>
+    <div class="flex w-full flex-col gap-4 text-ink/70">
+      <p>
+        Nous voulons encourager les jeunes à mettre leur foi, leurs talents
+        et leurs compétences au service des autres.
+      </p>
+      <p>
+        L'engagement peut prendre différentes formes : participer à une
+        initiative, contribuer à une campagne, servir une cause ou porter
+        soi-même un projet.
+      </p>
+    </div>
+  </div>
+
+  <div class="reveal-group mx-auto mt-16 max-w-4xl lg:mt-20">
+    <Image
+      src={engagementPhoto}
+      alt="Un jeune homme tenant un sac de collecte pendant une action de nettoyage en extérieur, entouré d'autres participants."
+      class="engagement-photo w-full reveal-photo"
+      widths={[640, 1024, 1440, 1920]}
+      sizes="(min-width: 64rem) 64rem, 100vw"
+      loading="lazy"
+    />
+  </div>
+
+  <ul class="activites-list reveal-group mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-3">
+    {activites.map((activite) => <li class="activite-chip">{activite}</li>)}
+  </ul>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .engagement-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .engagement-photo {
+    display: block;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  .activite-chip {
+    padding-inline: 0.875rem;
+    padding-block: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+</style>

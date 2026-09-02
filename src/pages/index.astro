@@ -1,0 +1,36 @@
+---
+// Page statique, prégénérée au build — malgré le passage du site en sortie
+// "server" pour "Parle-nous" (voir astro.config.mjs).
+export const prerender = true;
+
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/Hero.astro";
+import Pourquoi from "../components/Pourquoi.astro";
+import CeQueNousFaisons from "../components/CeQueNousFaisons.astro";
+import NotreApproche from "../components/NotreApproche.astro";
+import NotreTerrainAction from "../components/NotreTerrainAction.astro";
+import ALaUne from "../components/ALaUne.astro";
+import NosInitiatives from "../components/NosInitiatives.astro";
+import ChaineWhatsApp from "../components/ChaineWhatsApp.astro";
+import NotreVision from "../components/NotreVision.astro";
+import TuPeuxEnParler from "../components/TuPeuxEnParler.astro";
+import CtaFinal from "../components/CtaFinal.astro";
+import AutoOpenTuPeuxEnParler from "../components/AutoOpenTuPeuxEnParler.astro";
+---
+
+<Layout title="Jeune Chrétien" description="Grandir dans la foi. Se développer. Servir.">
+  <main>
+    <Hero />
+    <Pourquoi />
+    <CeQueNousFaisons />
+    <NotreApproche />
+    <NotreTerrainAction />
+    <ALaUne />
+    <NosInitiatives />
+    <ChaineWhatsApp />
+    <TuPeuxEnParler />
+    <NotreVision />
+    <CtaFinal />
+  </main>
+  <AutoOpenTuPeuxEnParler targetId="cta-final" />
+</Layout>

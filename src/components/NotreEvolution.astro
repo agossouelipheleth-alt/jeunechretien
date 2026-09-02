@@ -1,0 +1,171 @@
+---
+const steps = [
+  {
+    number: "01",
+    title: "Affermir",
+    lead: "Contribuer à l'affermissement des jeunes chrétiens.",
+    detail: "C'est le point de départ de Jeune Chrétien.",
+  },
+  {
+    number: "02",
+    title: "Comprendre",
+    lead: "Comprendre les réalités auxquelles les jeunes sont confrontés.",
+    detail:
+      "Chômage, sous-emploi, orientation, choix de carrière, conditions sociales…",
+  },
+  {
+    number: "03",
+    title: "Accompagner",
+    lead: "Prendre en compte le jeune dans sa globalité.",
+    detail: "Foi, parcours académique et devenir socio-professionnel.",
+  },
+] as const;
+---
+
+<section id="notre-evolution" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">Notre évolution</p>
+    <h2 class="evolution-heading">
+      D'une présence numérique à une approche plus holistique.
+    </h2>
+  </div>
+
+  <ol class="evolution-timeline mt-16 lg:mt-20">
+    {
+      steps.map((step) => (
+        <li class="evolution-step reveal-item">
+          <span class="evolution-number" aria-hidden="true">
+            {step.number}
+          </span>
+          <div class="evolution-content">
+            <h3 class="evolution-title">{step.title}</h3>
+            <p class="evolution-lead">{step.lead}</p>
+            <p class="evolution-detail">{step.detail}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .evolution-heading {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .evolution-timeline {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* Ligne verticale (mobile) reliant les badges numérotés — légèrement
+     plus longue que nécessaire au-delà du premier/dernier badge, effet
+     imperceptible et évite un calcul de hauteur précis. */
+  .evolution-timeline::before {
+    content: "";
+    position: absolute;
+    left: 1.25rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .evolution-step {
+    position: relative;
+    display: flex;
+    gap: 1.25rem;
+  }
+
+  .evolution-number {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 2px solid var(--color-accent);
+    background-color: var(--color-bg);
+    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  .evolution-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding-top: 0.375rem;
+  }
+
+  .evolution-title {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 1rem;
+  }
+
+  .evolution-lead {
+    max-width: 26rem;
+    font-weight: 500;
+  }
+
+  .evolution-detail {
+    max-width: 26rem;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    font-size: 0.9375rem;
+  }
+
+  /* Desktop : timeline horizontale, badges alignés, ligne au niveau de
+     leur centre vertical, cadrée entre le centre du 1er et du dernier
+     badge (calcul exact pour 3 colonnes égales : 1/6 et 5/6). */
+  @media (min-width: 64rem) {
+    .evolution-timeline {
+      flex-direction: row;
+      gap: 0;
+    }
+    .evolution-timeline::before {
+      left: 16.6667%;
+      right: 16.6667%;
+      top: 1.25rem;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+    }
+    .evolution-step {
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding-inline: 1.5rem;
+    }
+    .evolution-content {
+      align-items: center;
+      padding-top: 1.25rem;
+    }
+    .evolution-lead,
+    .evolution-detail {
+      max-width: 18rem;
+    }
+  }
+</style>

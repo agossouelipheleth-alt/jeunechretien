@@ -1,0 +1,245 @@
+---
+import { Image } from "astro:assets";
+import foiSpiritualite from "../assets/photos/card-foi-spiritualite.jpg";
+import developpementPersonnel from "../assets/photos/card-developpement-personnel.jpg";
+import formationCarriere from "../assets/photos/card-formation-carriere.jpg";
+import communauteFraternite from "../assets/photos/card-communaute-fraternite.jpg";
+import opportunitesReseau from "../assets/photos/card-opportunites-reseau.jpg";
+import engagementImpact from "../assets/photos/card-engagement-impact.jpg";
+
+const cards = [
+  {
+    number: "01",
+    slug: "foi-spiritualite",
+    title: "Foi & spiritualité",
+    description:
+      "Approfondir sa foi, réfléchir, apprendre et grandir dans sa relation avec Dieu.",
+    image: foiSpiritualite,
+    alt: "Une jeune femme souriante, lisant un livre à l'extérieur.",
+    span: 7,
+  },
+  {
+    number: "02",
+    slug: "developpement-personnel",
+    title: "Développement personnel",
+    description:
+      "Développer ses capacités, renforcer sa confiance et devenir davantage acteur de son parcours.",
+    image: developpementPersonnel,
+    alt: "Un groupe de jeunes assis ensemble à l'extérieur, échangeant autour de documents.",
+    span: 5,
+  },
+  {
+    number: "03",
+    slug: "formation-carriere",
+    title: "Formation & carrière",
+    description:
+      "Se préparer aux études, au monde professionnel, à l'entrepreneuriat et aux responsabilités.",
+    image: formationCarriere,
+    alt: "Un jeune homme concentré, travaillant sur un ordinateur portable dans un bureau moderne.",
+    span: 5,
+  },
+  {
+    number: "04",
+    slug: "communaute-fraternite",
+    title: "Communauté & fraternité",
+    description:
+      "Créer des espaces d'échange, de partage et de fraternité entre jeunes.",
+    image: communauteFraternite,
+    alt: "Des mains réunies en cercle, symbole d'unité et de fraternité.",
+    span: 7,
+  },
+  {
+    number: "05",
+    slug: "opportunites-reseau",
+    title: "Opportunités & réseau",
+    description:
+      "Mettre en lumière des ressources, des formations, des mentors et des opportunités.",
+    image: opportunitesReseau,
+    alt: "Trois jeunes professionnels en pleine conversation.",
+    span: 7,
+  },
+  {
+    number: "06",
+    slug: "engagement-impact",
+    title: "Engagement & impact",
+    description:
+      "Encourager les jeunes à mettre leur foi, leurs talents et leurs compétences au service des autres.",
+    image: engagementImpact,
+    alt: "Un groupe de jeunes engagés dans une discussion collective.",
+    span: 5,
+  },
+] as const;
+---
+
+<section id="ce-que-nous-faisons" class="section-alt">
+  <div class="container-content px-4 py-24 sm:px-6 lg:py-32">
+    <div
+      class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center"
+    >
+      <p class="kicker">Notre action</p>
+      <h2 class="faisons-title">
+        <span class="block">Une foi qui se vit.</span>
+        <span class="block">Un potentiel qui se développe.</span>
+        <span class="block">Une jeunesse qui agit.</span>
+      </h2>
+      <p class="text-ink/70">
+        Nous créons des contenus, développons des initiatives et proposons
+        des espaces d'échange autour des réalités qui touchent les jeunes
+        chrétiens.
+      </p>
+    </div>
+
+    <div class="cards-row mt-16">
+      {
+        cards.map((card) => (
+          <article
+            class="reveal-item card card-hover flex flex-col items-start gap-4"
+            style={`grid-column: span ${card.span} / span ${card.span};`}
+          >
+            <span class="card-number" aria-hidden="true">
+              {card.number}
+            </span>
+            <div class="card-hover-media reveal-photo w-full overflow-hidden rounded-lg">
+              <Image
+                src={card.image}
+                alt={card.alt}
+                class="aspect-[4/5] w-full max-h-72 object-cover sm:max-h-80 lg:max-h-96"
+                widths={[300, 500, 700]}
+                sizes="(min-width: 1024px) 40vw, 90vw"
+                loading="lazy"
+              />
+            </div>
+            <h3>{card.title}</h3>
+            <p class="text-ink/70">{card.description}</p>
+            <a href={`/ce-que-nous-faisons#${card.slug}`} class="cta-text">
+              <span>Découvrir</span>
+              <span class="cta-arrow" aria-hidden="true">
+                →
+              </span>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .section-alt {
+    background-color: var(--color-surface-alt);
+  }
+
+  .kicker {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .faisons-title {
+    font-size: clamp(1.75rem, 1.3rem + 2vw, 3rem);
+    line-height: 1.15;
+  }
+
+  /* Mobile : carrousel horizontal (swipe) — une grande grille asymétrique
+     ne se "réduit" pas en une simple colonne, elle se repense pour l'écran
+     mobile. Les photos gardent une largeur généreuse pour rester
+     impactantes. À partir de lg : grille éditoriale asymétrique en 12
+     colonnes (cf. attribut grid-column sur chaque carte). */
+  .cards-row {
+    display: flex;
+    gap: 1.25rem;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+    padding-bottom: 0.5rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .cards-row::-webkit-scrollbar {
+    display: none;
+  }
+  .cards-row > .card {
+    flex: 0 0 78%;
+    scroll-snap-align: center;
+  }
+
+  @media (min-width: 40rem) {
+    .cards-row {
+      margin-inline: -1.5rem;
+      padding-inline: 1.5rem;
+    }
+    .cards-row > .card {
+      flex-basis: 60%;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 2.5rem;
+      margin-inline: 0;
+      padding-inline: 0;
+      overflow: visible;
+    }
+    .cards-row > .card {
+      flex: initial;
+      scroll-snap-align: none;
+    }
+  }
+
+  .card-number {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
+
+  .card h3 {
+    font-weight: 600;
+  }
+
+  .cta-text {
+    position: relative;
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .cta-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .cta-text:hover,
+  .cta-text:focus-visible {
+    color: var(--color-accent);
+  }
+  .cta-text:hover::after,
+  .cta-text:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .cta-arrow {
+    transition: transform 150ms var(--ease-out-site);
+  }
+  .cta-text:hover .cta-arrow,
+  .cta-text:focus-visible .cta-arrow {
+    transform: translateX(4px);
+  }
+</style>

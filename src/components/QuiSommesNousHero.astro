@@ -1,0 +1,77 @@
+---
+import { Image } from "astro:assets";
+import heroGeneration from "../assets/photos/qui-sommes-nous-hero-generation.png";
+---
+
+<section class="qsn-hero">
+  <div
+    class="container-content grid gap-10 px-4 py-16 sm:px-6 lg:grid-cols-12 lg:items-center lg:gap-14 lg:py-24"
+  >
+    <div class="reveal-group flex flex-col items-start gap-6 lg:col-span-4">
+      <p class="qsn-kicker">Qui sommes-nous ?</p>
+      <h1 class="qsn-title">
+        Une génération qui grandit dans la foi et prend sa place.
+      </h1>
+      <p class="max-w-md text-ink/70">
+        Jeune Chrétien est une association qui œuvre pour informer, inspirer,
+        former et accompagner les jeunes dans leur foi, leur développement et
+        leur engagement.
+      </p>
+    </div>
+
+    <div class="reveal-group qsn-media lg:col-span-8">
+      <Image
+        src={heroGeneration}
+        alt="Un groupe de jeunes adultes célèbre ensemble, bras levés, lors d'une soirée en extérieur – une génération qui avance unie."
+        class="qsn-photo w-full reveal-photo"
+        widths={[400, 700, 1000, 1400, 1800]}
+        sizes="(min-width: 1024px) 67vw, 100vw"
+        loading="eager"
+      />
+      <span class="qsn-tag" aria-hidden="true">Foi • Jeunesse • Impact</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .qsn-kicker {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  /* Volontairement plus sobre que le titre de la homepage : casse normale
+     (pas de majuscules), pas de retours à la ligne imposés. */
+  .qsn-title {
+    font-size: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);
+    line-height: 1.15;
+  }
+
+  .qsn-media {
+    position: relative;
+  }
+
+  .qsn-photo {
+    display: block;
+    aspect-ratio: 3 / 2;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  .qsn-tag {
+    position: absolute;
+    left: 1.25rem;
+    bottom: 1.25rem;
+    padding-inline: 0.75rem;
+    padding-block: 0.4rem;
+    border-radius: var(--radius-md);
+    background-color: rgb(7 5 0 / 0.45);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+// Section typographique pure, fond sombre fixe (non réactif au thème du
+// site — choix délibéré, comme .approche-section sur la homepage) :
+// moment fort et minimaliste, sans photo.
+const words = ["Foi", "Potentiel", "Avenir", "Engagement"] as const;
+---
+
+<section id="notre-vision-qsn" class="vision-typo-section">
+  <div class="container-content px-4 py-24 sm:px-6 lg:py-32">
+    <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+      <p class="kicker">Notre vision</p>
+      <h2 class="vision-title w-full">
+        Voir émerger une génération de jeunes chrétiens affermis, préparés et
+        engagés.
+      </h2>
+      <p class="w-full vision-text">
+        Nous voulons contribuer à l'émergence de jeunes chrétiens capables de
+        grandir dans leur foi, de développer leur potentiel, de préparer
+        leur avenir et de prendre leur place dans la société.
+      </p>
+    </div>
+
+    <div class="vision-words reveal-group mt-16 lg:mt-20">
+      {words.map((word) => <span class="vision-word">{word}</span>)}
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .vision-typo-section {
+    background-color: #070500;
+    color: #fff;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-on-dark);
+  }
+
+  .vision-title {
+    font-size: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);
+    line-height: 1.2;
+  }
+
+  .vision-text {
+    max-width: 42rem;
+    margin-inline: auto;
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  /* Les quatre mots apparaissent progressivement (stagger du
+     .reveal-group), un séparateur discret rattaché à chaque mot plutôt
+     qu'un nœud séparé, pour que le décompte des enfants reste simple. */
+  .vision-words {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    row-gap: 0.75rem;
+  }
+
+  .vision-word {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.375rem, 1.1rem + 1.4vw, 2rem);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .vision-word:not(:first-child)::before {
+    content: "·";
+    display: inline-block;
+    margin-inline: 0.75rem;
+    color: rgb(255 255 255 / 0.35);
+  }
+  @media (min-width: 40rem) {
+    .vision-word:not(:first-child)::before {
+      margin-inline: 1.25rem;
+    }
+  }
+</style>

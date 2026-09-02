@@ -1,0 +1,100 @@
+---
+import { Image } from "astro:assets";
+import terrainActionPhoto from "../assets/photos/terrain-action-connected.jpg";
+---
+
+<section id="notre-terrain-action" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-10">
+    <div
+      class="reveal-group flex flex-col items-start gap-6 lg:order-last lg:col-span-5"
+    >
+      <p class="kicker">Notre terrain d'action</p>
+      <h2 class="max-w-md">Nous sommes là où les jeunes sont.</h2>
+      <div class="flex max-w-md flex-col gap-4 text-ink/70">
+        <p>Jeune Chrétien développe principalement son action en ligne.</p>
+        <p>
+          Réseaux sociaux, vidéos, articles, rencontres virtuelles,
+          formations, témoignages et ressources numériques : nous utilisons
+          les outils d'aujourd'hui pour créer des espaces où les jeunes
+          peuvent apprendre, réfléchir, échanger et grandir.
+        </p>
+        <p>
+          Le numérique est notre principal espace d'action. Mais notre
+          ambition va au-delà de l'écran.
+        </p>
+      </div>
+      <a href="/ce-que-nous-faisons" class="cta-text">
+        <span>Découvrir ce que nous faisons</span>
+        <span class="cta-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+
+    <div class="reveal-group lg:order-first lg:col-span-7">
+      <Image
+        src={terrainActionPhoto}
+        alt="Montage de jeunes vivant le numérique au quotidien : messages et réseaux sociaux, selfie de groupe, échange autour d'un smartphone et d'un ordinateur portable, jeune homme pensif consultant son téléphone."
+        class="terrain-action-photo w-full rounded-lg object-cover reveal-photo"
+        widths={[400, 640, 800, 1350]}
+        sizes="(min-width: 1024px) 55vw, 100vw"
+        loading="lazy"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .terrain-action-photo {
+    aspect-ratio: 4 / 3;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .cta-text {
+    position: relative;
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-ink);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .cta-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .cta-text:hover,
+  .cta-text:focus-visible {
+    color: var(--color-accent);
+  }
+  .cta-text:hover::after,
+  .cta-text:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .cta-arrow {
+    transition: transform 150ms var(--ease-out-site);
+  }
+  .cta-text:hover .cta-arrow,
+  .cta-text:focus-visible .cta-arrow {
+    transform: translateX(4px);
+  }
+</style>

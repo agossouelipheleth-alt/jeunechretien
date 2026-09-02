@@ -1,0 +1,402 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import {
+  getSupabaseClient,
+  updateMessage,
+  deleteMessage,
+  type ParleNousMessage,
+  type MessageCategory,
+  type MessageStatus,
+} from "../../lib/supabase";
+
+const categoryLabels: Record<MessageCategory, string> = {
+  question: "Question",
+  preoccupation: "Préoccupation",
+  priere: "Prière",
+  autre: "Autre",
+};
+
+const statusLabels: Record<MessageStatus, string> = {
+  nouveau: "Nouveau",
+  en_cours: "En cours",
+  traite: "Traité",
+  archive: "Archivé",
+};
+
+const statusOptions: MessageStatus[] = ["nouveau", "en_cours", "traite", "archive"];
+
+const supabase = getSupabaseClient();
+let actionError: string | null = null;
+
+// Actions (changement de statut, priorité, suppression) traitées en POST
+// sur cette même page, puis redirection (motif POST → redirect → GET,
+// pour éviter une re-soumission accidentelle au rechargement).
+if (supabase && Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const action = String(formData.get("action") ?? "");
+  const messageId = String(formData.get("messageId") ?? "");
+
+  if (messageId) {
+    if (action === "set-status") {
+      const status = String(formData.get("status") ?? "");
+      if ((statusOptions as string[]).includes(status)) {
+        const { error } = await updateMessage(supabase, messageId, {
+          status: status as MessageStatus,
+        });
+        if (error) actionError = "Impossible de mettre à jour le statut.";
+      }
+    } else if (action === "toggle-priority") {
+      const nextPriority = formData.get("nextPriority") === "true";
+      const { error } = await updateMessage(supabase, messageId, {
+        is_priority: nextPriority,
+      });
+      if (error) actionError = "Impossible de mettre à jour la priorité.";
+    } else if (action === "delete") {
+      const { error } = await deleteMessage(supabase, messageId);
+      if (error) actionError = "Impossible de supprimer le message.";
+    }
+  }
+
+  if (!actionError) {
+    return Astro.redirect(Astro.url.pathname + Astro.url.search);
+  }
+}
+
+const filter = Astro.url.searchParams.get("filter") ?? "all";
+
+let messages: ParleNousMessage[] = [];
+let loadError: string | null = null;
+
+if (supabase) {
+  let query = supabase
+    .from("messages")
+    .select("*")
+    .order("is_priority", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (filter !== "all") {
+    query = query.eq("category", filter);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    loadError = "Impossible de charger les messages.";
+  } else {
+    messages = (data ?? []) as ParleNousMessage[];
+  }
+}
+
+const filters = [
+  { key: "all", label: "Tous" },
+  { key: "question", label: "Questions" },
+  { key: "preoccupation", label: "Préoccupations" },
+  { key: "priere", label: "Prières" },
+  { key: "autre", label: "Autres" },
+] as const;
+
+const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+---
+
+<AdminLayout title="Messages">
+  <main class="admin-main">
+    <header class="admin-header">
+      <div>
+        <p class="admin-kicker">Espace interne</p>
+        <h1 class="admin-title">Parle-nous – Messages</h1>
+      </div>
+      <form method="POST" action="/api/admin/logout">
+        <button type="submit" class="logout-button">Se déconnecter</button>
+      </form>
+    </header>
+
+    {!supabase && (
+      <p class="admin-notice">
+        Supabase n'est pas encore configuré : renseigner{" "}
+        <code>SUPABASE_URL</code> et <code>SUPABASE_SERVICE_ROLE_KEY</code>{" "}
+        dans <code>.env</code> (voir <code>.env.example</code> et{" "}
+        <code>supabase/schema.sql</code>) pour que les messages reçus via
+        « Parle-nous » apparaissent ici.
+      </p>
+    )}
+
+    {loadError && <p class="admin-error">{loadError}</p>}
+    {actionError && <p class="admin-error">{actionError}</p>}
+
+    {supabase && (
+      <>
+        <nav class="filters" aria-label="Filtrer par catégorie">
+          {
+            filters.map((f) => (
+              <a
+                href={f.key === "all" ? "/admin/messages" : `/admin/messages?filter=${f.key}`}
+                class="filter-link"
+                aria-current={filter === f.key ? "page" : undefined}
+              >
+                {f.label}
+              </a>
+            ))
+          }
+        </nav>
+
+        {messages.length === 0 ? (
+          <p class="empty-state">Aucun message pour le moment.</p>
+        ) : (
+          <ul class="message-list">
+            {
+              messages.map((message) => (
+                <li class={`message-card ${message.is_priority ? "is-priority" : ""}`}>
+                  <div class="message-meta">
+                    <span class="category-badge">{categoryLabels[message.category]}</span>
+                    <span class="message-date">{dateFormatter.format(new Date(message.created_at))}</span>
+                    {message.is_anonymous ? (
+                      <span class="anonymity-badge">Anonyme</span>
+                    ) : (
+                      <span class="anonymity-badge">
+                        {message.name || message.email
+                          ? [message.name, message.email].filter(Boolean).join(" · ")
+                          : "Non anonyme (aucune coordonnée laissée)"}
+                      </span>
+                    )}
+                    {message.is_priority && <span class="priority-badge">Prioritaire</span>}
+                  </div>
+
+                  <p class="message-content">{message.content}</p>
+
+                  <div class="message-actions">
+                    <form method="POST" class="status-form">
+                      <input type="hidden" name="messageId" value={message.id} />
+                      <input type="hidden" name="action" value="set-status" />
+                      <select name="status" class="status-select" data-autosubmit>
+                        {
+                          statusOptions.map((status) => (
+                            <option value={status} selected={status === message.status}>
+                              {statusLabels[status]}
+                            </option>
+                          ))
+                        }
+                      </select>
+                    </form>
+
+                    <form method="POST">
+                      <input type="hidden" name="messageId" value={message.id} />
+                      <input type="hidden" name="action" value="toggle-priority" />
+                      <input type="hidden" name="nextPriority" value={String(!message.is_priority)} />
+                      <button type="submit" class="action-button">
+                        {message.is_priority ? "Retirer la priorité" : "Marquer prioritaire"}
+                      </button>
+                    </form>
+
+                    <form method="POST" data-confirm="Supprimer définitivement ce message ?">
+                      <input type="hidden" name="messageId" value={message.id} />
+                      <input type="hidden" name="action" value="delete" />
+                      <button type="submit" class="action-button action-button-danger">
+                        Supprimer
+                      </button>
+                    </form>
+                  </div>
+                </li>
+              ))
+            }
+          </ul>
+        )}
+      </>
+    )}
+  </main>
+</AdminLayout>
+
+<style>
+  .admin-main {
+    max-width: 56rem;
+    margin-inline: auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+
+  .admin-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .admin-kicker {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .admin-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .logout-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .logout-button:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+
+  .admin-notice,
+  .admin-error {
+    margin-bottom: 1.5rem;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .admin-notice {
+    background-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
+    color: color-mix(in srgb, var(--color-ink) 75%, transparent);
+  }
+  .admin-error {
+    background-color: color-mix(in srgb, #b3261e 8%, transparent);
+    color: #8c1d17;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .filter-link {
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    color: color-mix(in srgb, var(--color-ink) 65%, transparent);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: border-color 150ms var(--ease-out-site);
+  }
+  .filter-link:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+  .filter-link[aria-current="page"] {
+    border-color: var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .empty-state {
+    padding: 3rem 0;
+    text-align: center;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  .message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .message-card {
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .message-card.is-priority {
+    border-color: var(--color-accent);
+  }
+
+  .message-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .category-badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .message-date,
+  .anonymity-badge {
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  .priority-badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, #b3261e 12%, transparent);
+    color: #8c1d17;
+    font-weight: 600;
+  }
+  :root[data-theme="dark"] .priority-badge {
+    color: #ffb4ab;
+    background-color: color-mix(in srgb, #ffb4ab 16%, transparent);
+  }
+
+  .message-content {
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+    line-height: 1.6;
+  }
+
+  .message-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+
+  .status-select,
+  .action-button {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+  .action-button:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+  .action-button-danger {
+    color: #b3261e;
+  }
+  :root[data-theme="dark"] .action-button-danger {
+    color: #ffb4ab;
+  }
+</style>
+
+<script>
+  // Soumission automatique du select de statut au changement.
+  document.querySelectorAll<HTMLSelectElement>("select[data-autosubmit]").forEach((select) => {
+    select.addEventListener("change", () => {
+      select.form?.requestSubmit();
+    });
+  });
+
+  // Confirmation avant suppression définitive.
+  document.querySelectorAll<HTMLFormElement>("form[data-confirm]").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      const message = form.dataset.confirm;
+      if (message && !window.confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>

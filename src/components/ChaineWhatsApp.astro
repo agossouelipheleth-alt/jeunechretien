@@ -1,0 +1,197 @@
+---
+import SuivreChaineWhatsApp from "./SuivreChaineWhatsApp.astro";
+
+// Section homepage "Chaîne WhatsApp" (brief "Intégration de la chaîne
+// WhatsApp" section 6) — positionnée après que le visiteur a découvert
+// contenus et initiatives (ALaUne, NosInitiatives), avant "Tu peux en
+// parler" (voir index.astro). Fonctionnellement et visuellement distincte
+// de "Tu peux en parler" : pas de modale, lien direct, CTA différent.
+//
+// Accroche et texte imposés au mot près par le brief — ne pas reformuler.
+const contentTypes = ["Article", "Vidéo", "Ressource", "Événement", "Formation", "Webinaire"] as const;
+---
+
+<section id="chaine-whatsapp" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+    <div class="reveal-group flex flex-col items-start gap-6">
+      <p class="kicker">Recevoir les nouveautés</p>
+      <h2 class="max-w-xl">
+        Ne passe plus à côté des contenus et opportunités qui peuvent faire
+        la différence.
+      </h2>
+      <p class="max-w-md text-ink/70">
+        Articles, vidéos, ressources, événements, initiatives, formations et
+        webinaires : retrouve les nouveautés de Jeune Chrétien directement
+        sur notre chaîne WhatsApp.
+      </p>
+      <SuivreChaineWhatsApp location="homepage" />
+    </div>
+
+    <div class="reveal-group">
+      <div class="wa-illustration" aria-hidden="true">
+        <div class="wa-phone">
+          <div class="wa-phone-header">
+            <span class="wa-phone-avatar">JC</span>
+            <span class="wa-phone-name">Jeune Chrétien</span>
+          </div>
+          <div class="wa-phone-lines">
+            <span class="wa-phone-line wa-phone-line--80"></span>
+            <span class="wa-phone-line wa-phone-line--60"></span>
+            <span class="wa-phone-line wa-phone-line--90"></span>
+            <span class="wa-phone-line wa-phone-line--50"></span>
+          </div>
+        </div>
+        <ul class="wa-chips">
+          {contentTypes.map((type) => <li class="wa-chip">{type}</li>)}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  /* Composition illustrative maison — volontairement abstraite : pas de
+     vert ni de logo WhatsApp, pas de reproduction de son interface. */
+  .wa-illustration {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22rem;
+  }
+
+  .wa-phone {
+    width: 13rem;
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface-alt);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .wa-phone-header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .wa-phone-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .wa-phone-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .wa-phone-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .wa-phone-line {
+    display: block;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+  .wa-phone-line--80 {
+    width: 80%;
+  }
+  .wa-phone-line--60 {
+    width: 60%;
+  }
+  .wa-phone-line--90 {
+    width: 90%;
+  }
+  .wa-phone-line--50 {
+    width: 50%;
+  }
+
+  /* Les pastilles débordent volontairement un peu du cadre du téléphone
+     (effet de composition), mais jamais au-delà du padding horizontal de
+     la section — sans quoi elles provoquent un scroll horizontal de toute
+     la page sur mobile. Décalages volontairement modestes (max 0.5rem) et
+     encore réduits sous 26rem. */
+  .wa-chips {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .wa-chip {
+    position: absolute;
+    padding-inline: 0.75rem;
+    padding-block: 0.375rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+    box-shadow: var(--shadow-soft);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    white-space: nowrap;
+  }
+  .wa-chip:nth-child(1) {
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+  .wa-chip:nth-child(2) {
+    top: 2.5rem;
+    right: 0.5rem;
+  }
+  .wa-chip:nth-child(3) {
+    top: 45%;
+    left: 0;
+  }
+  .wa-chip:nth-child(4) {
+    bottom: 45%;
+    right: 0;
+  }
+  .wa-chip:nth-child(5) {
+    bottom: 2rem;
+    left: 0.5rem;
+  }
+  .wa-chip:nth-child(6) {
+    bottom: 0.25rem;
+    right: 1.5rem;
+  }
+
+  @media (max-width: 26rem) {
+    .wa-chip {
+      font-size: 0.6875rem;
+      padding-inline: 0.5rem;
+    }
+  }
+</style>

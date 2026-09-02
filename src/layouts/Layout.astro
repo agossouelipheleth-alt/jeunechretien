@@ -1,0 +1,96 @@
+---
+import "@fontsource-variable/montserrat";
+import "@fontsource-variable/jost";
+import "../styles/global.css";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import TuPeuxEnParlerModal from "../components/TuPeuxEnParlerModal.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <script is:inline>
+      // Applique le thème mémorisé AVANT le premier paint (pas de flash).
+      // Ne se base jamais sur prefers-color-scheme : le site charge
+      // toujours en clair par défaut au tout premier chargement — le
+      // sombre est un choix actif (clic sur le logo), jamais automatique.
+      try {
+        if (localStorage.getItem("theme") === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      } catch {
+        // localStorage indisponible — reste en thème clair par défaut.
+      }
+    </script>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    {description && <meta name="description" content={description} />}
+    <title>{title}</title>
+  </head>
+  <body>
+    <Navbar />
+    <slot />
+    <Footer />
+    <TuPeuxEnParlerModal />
+    <script>
+      // Apparition au scroll pour tout groupe ".reveal-group" ou élément
+      // ".reveal-item" (voir global.css). Un seul observateur partagé par
+      // page ; révèle une fois puis se désabonne.
+      const groups = document.querySelectorAll<HTMLElement>(
+        ".reveal-group, .reveal-item"
+      );
+      if (groups.length > 0) {
+        const prefersReducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+
+        if (prefersReducedMotion) {
+          groups.forEach((group) => group.classList.add("is-visible"));
+        } else {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add("is-visible");
+                  observer.unobserve(entry.target);
+                }
+              }
+            },
+            { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
+          );
+          groups.forEach((group) => observer.observe(group));
+        }
+      }
+    </script>
+    <script>
+      // Mesure des clics "Suivre la chaîne WhatsApp" (brief "Intégration
+      // de la chaîne WhatsApp" section 19) — un seul listener délégué
+      // pour tous les CTA du site (voir SuivreChaineWhatsApp.astro),
+      // aucune donnée personnelle, aucun outil installé : ne fait que
+      // pousser un événement dans dataLayer s'il existe déjà (GTM/GA4),
+      // prêt à être branché sans changement de code le jour où un outil
+      // d'analytics est ajouté au site.
+      document.addEventListener("click", (event) => {
+        const el = (event.target as HTMLElement)?.closest<HTMLElement>(
+          "[data-whatsapp-cta]"
+        );
+        if (!el) return;
+        const w = window as typeof window & { dataLayer?: unknown[] };
+        w.dataLayer?.push({
+          event: "whatsapp_channel_click",
+          location: el.dataset.location ?? "unknown",
+        });
+      });
+    </script>
+  </body>
+</html>

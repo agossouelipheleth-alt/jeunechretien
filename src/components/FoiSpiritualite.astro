@@ -1,0 +1,133 @@
+---
+import { Image } from "astro:assets";
+import foiPhoto from "../assets/photos/foi-spiritualite-lecture.jpg";
+
+const formats = [
+  "Contenus bibliques",
+  "Réflexions",
+  "Enseignements",
+  "Témoignages",
+  "Études bibliques",
+  "Rencontres en ligne",
+  "Questions & réponses",
+] as const;
+---
+
+<section id="foi-spiritualite" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="domaine-grid grid gap-10 lg:grid-cols-12 lg:gap-14">
+    <div class="reveal-group flex flex-col items-start gap-6 lg:col-span-7">
+      <p class="kicker">01 – Foi & spiritualité</p>
+      <h2 class="domaine-detail-title">Affermir la foi, au cœur du quotidien.</h2>
+      <p class="text-ink/70">
+        Jeune Chrétien propose des contenus et des activités qui permettent
+        aux jeunes d'approfondir leur foi, de réfléchir aux réalités de leur
+        vie chrétienne et de trouver des ressources pour avancer.
+      </p>
+
+      <div class="w-full">
+        <p class="formats-label">Ce que nous proposons</p>
+        <ul class="formats-list reveal-group">
+          {formats.map((format) => <li>{format}</li>)}
+        </ul>
+      </div>
+
+      <button type="button" class="prayer-cta" data-tpp-open="priere">
+        Déposer une demande de prière
+      </button>
+    </div>
+
+    <div class="reveal-group domaine-media lg:col-span-5">
+      <Image
+        src={foiPhoto}
+        alt="Un jeune homme lisant la Bible, plongé dans un moment calme de lecture et de réflexion."
+        class="domaine-photo w-full reveal-photo"
+        widths={[400, 640, 800, 1000]}
+        sizes="(min-width: 1024px) 40vw, 100vw"
+        loading="lazy"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .domaine-detail-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+    max-width: 28rem;
+  }
+
+  .domaine-photo {
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  .formats-label {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  .formats-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .formats-list li {
+    padding-block: 0.875rem;
+    border-top: 1px solid var(--color-border);
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    transition: color 150ms var(--ease-out-site);
+  }
+  .formats-list li:last-child {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .formats-list li:hover {
+    color: var(--color-accent);
+  }
+
+  .prayer-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1.5rem;
+    padding-inline: 1.5rem;
+    padding-block: 0.75rem;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    background-color: transparent;
+    color: var(--color-accent);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: background-color 150ms var(--ease-out-site);
+  }
+  .prayer-cta:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+  .prayer-cta:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 64rem) {
+    .domaine-media {
+      position: sticky;
+      top: 6.5rem;
+      align-self: start;
+    }
+  }
+</style>

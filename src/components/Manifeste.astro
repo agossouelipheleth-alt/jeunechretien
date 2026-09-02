@@ -1,0 +1,40 @@
+---
+const words = ["Croire.", "Apprendre.", "Grandir.", "Servir."] as const;
+---
+
+<section id="manifeste" class="container-content px-4 py-24 sm:px-6 lg:py-40">
+  <div class="reveal-group mx-auto flex max-w-xl flex-col items-center gap-14 text-center lg:gap-20">
+    <p class="manifeste-intro text-ink/70">
+      Nous croyons qu'une jeunesse affermie dans sa foi peut aussi être
+      préparée à son avenir et engagée dans son époque.
+    </p>
+
+    <div class="manifeste-words">
+      {words.map((word) => <p>{word}</p>)}
+    </div>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .manifeste-intro {
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+    line-height: 1.5;
+  }
+
+  .manifeste-words {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .manifeste-words p {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.75rem, 1.5rem + 7vw, 6.5rem);
+    line-height: 1.05;
+  }
+</style>

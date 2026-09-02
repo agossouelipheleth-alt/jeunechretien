@@ -1,0 +1,155 @@
+---
+import { Image } from "astro:assets";
+import visionGroupe from "../assets/photos/notre-vision-groupe.png";
+
+const lines = [
+  "Une génération enracinée dans la foi.",
+  "Une génération qui développe ses talents.",
+  "Une génération qui prend ses responsabilités.",
+  "Une génération qui sert activement dans sa communauté.",
+  "Une génération qui influence positivement son environnement.",
+] as const;
+---
+
+<section id="notre-vision" class="vision-section">
+  <Image
+    src={visionGroupe}
+    alt="Groupe de jeunes adultes réunis sous des palmiers, souriants et complices."
+    class="vision-bg"
+    widths={[640, 1024, 1440, 1920]}
+    sizes="100vw"
+    loading="eager"
+  />
+  <div class="vision-scrim" aria-hidden="true"></div>
+
+  <div class="container-content vision-content reveal-group">
+    <p class="vision-kicker">Notre vision</p>
+    <p class="vision-intro">
+      Nous croyons en une génération qui ne se contente pas de croire, mais
+      qui construit.
+    </p>
+    <ul class="vision-list">
+      {lines.map((line) => <li>{line}</li>)}
+    </ul>
+    <p class="vision-highlight">
+      C'est cette génération que nous voulons contribuer à faire émerger.
+    </p>
+    <a href="/qui-sommes-nous" class="cta-text">
+      <span>Découvrir qui nous sommes</span>
+      <span class="cta-arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .vision-section {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    min-height: 34rem;
+    padding-block: 6rem;
+  }
+
+  .vision-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+  }
+
+  .vision-scrim {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 0.5);
+  }
+
+  .vision-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 46rem;
+    margin-inline: auto;
+    text-align: center;
+    color: #fff;
+  }
+
+  .vision-kicker {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-on-dark);
+  }
+
+  .vision-intro {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 1.1rem + 2vw, 2.5rem);
+    line-height: 1.25;
+    font-weight: 600;
+  }
+
+  .vision-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    color: rgb(255 255 255 / 0.85);
+    font-size: clamp(1rem, 0.9rem + 0.4vw, 1.125rem);
+  }
+
+  .vision-highlight {
+    margin-top: 0.5rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
+    line-height: 1.3;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .cta-text {
+    position: relative;
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    color: #fff;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .cta-text::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background-color: var(--color-accent-on-dark);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .cta-text:hover,
+  .cta-text:focus-visible {
+    color: var(--color-accent-on-dark);
+  }
+  .cta-text:hover::after,
+  .cta-text:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .cta-arrow {
+    transition: transform 150ms var(--ease-out-site);
+  }
+  .cta-text:hover .cta-arrow,
+  .cta-text:focus-visible .cta-arrow {
+    transform: translateX(4px);
+  }
+</style>

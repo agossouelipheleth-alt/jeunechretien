@@ -1,0 +1,177 @@
+---
+// Composition d'usages numériques autour d'un badge central — pas de
+// photographie ici (brief : smartphone, ordinateur, écouteurs,
+// visioconférence, réseaux sociaux, lecture d'article, vidéo, rencontres),
+// reliés visuellement au centre par des anneaux concentriques décoratifs
+// plutôt que des lignes individuelles par icône (rendu plus sobre,
+// entièrement responsive). Apparition progressive via reveal-group.
+const usages = [
+  {
+    label: "Smartphone",
+    path: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+  },
+  {
+    label: "Ordinateur",
+    path: '<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M2 18h20l-2 3H4z"/>',
+  },
+  {
+    label: "Écouteurs",
+    path: '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="4" height="6" rx="2"/><rect x="18" y="14" width="4" height="6" rx="2"/>',
+  },
+  {
+    label: "Visioconférence",
+    path: '<rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-4v12l-6-4z"/>',
+  },
+  {
+    label: "Réseaux sociaux",
+    path: '<circle cx="6" cy="12" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 11l8-4M8 13l8 4"/>',
+  },
+  {
+    label: "Lecture d'un article",
+    path: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  },
+  {
+    label: "Vidéo",
+    path: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/>',
+  },
+  {
+    label: "Rencontres",
+    path: '<circle cx="7" cy="8" r="3"/><path d="M2 20c0-3.3 2.2-6 5-6s5 2.7 5 6"/><circle cx="17" cy="8" r="3"/><path d="M12 20c0-3.3 2.2-6 5-6s5 2.7 5 6"/>',
+  },
+] as const;
+---
+
+<section id="ecosysteme-numerique" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">En ligne</p>
+    <h2 class="ecosysteme-title">Être présent là où les jeunes sont.</h2>
+    <p class="text-ink/70">
+      Réseaux sociaux, vidéos, articles, rencontres virtuelles, formations et
+      ressources numériques : nous utilisons les outils numériques pour
+      rendre nos contenus et nos initiatives accessibles aux jeunes.
+    </p>
+  </div>
+
+  <div class="ecosysteme-composition mt-16 lg:mt-20">
+    <div class="ecosysteme-center">
+      <span class="ecosysteme-ring ecosysteme-ring-1" aria-hidden="true"></span>
+      <span class="ecosysteme-ring ecosysteme-ring-2" aria-hidden="true"></span>
+      <span class="ecosysteme-brand">Jeune Chrétien</span>
+    </div>
+
+    <ul class="ecosysteme-usages reveal-group">
+      {
+        usages.map((usage) => (
+          <li class="ecosysteme-usage">
+            <svg
+              class="ecosysteme-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              set:html={usage.path}
+            />
+            <span>{usage.label}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .ecosysteme-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .ecosysteme-composition {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+  }
+
+  .ecosysteme-center {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 9rem;
+    height: 9rem;
+  }
+
+  .ecosysteme-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  }
+  .ecosysteme-ring-2 {
+    inset: -1.5rem;
+    border-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+
+  .ecosysteme-brand {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 7rem;
+    height: 7rem;
+    border-radius: 9999px;
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1.2;
+    padding: 0.5rem;
+  }
+
+  .ecosysteme-usages {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem 1rem;
+    width: 100%;
+    max-width: 44rem;
+  }
+  @media (min-width: 40rem) {
+    .ecosysteme-usages {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .ecosysteme-usage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.625rem;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-ink) 65%, transparent);
+  }
+
+  .ecosysteme-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--color-accent);
+  }
+</style>

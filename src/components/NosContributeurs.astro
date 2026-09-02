@@ -1,0 +1,234 @@
+---
+import { Image } from "astro:assets";
+import MediaPlaceholder from "./MediaPlaceholder.astro";
+import franckHounsa from "../assets/photos/contributeur-franck-hounsa.png";
+import arnaudKarlJob from "../assets/photos/contributeur-arnaud-karl-job.jpg";
+import joelArseneNoumonvi from "../assets/photos/contributeur-joel-arsene-noumonvi.jpg";
+import ablawaBoko from "../assets/photos/contributeur-ablawa-boko-laptop.png";
+import armelAgbohouto from "../assets/photos/contributeur-armel-agbohouto.jpg";
+import josueSossou from "../assets/photos/contributeur-josue-sossou.png";
+
+// Les 6 profils (photo, nom, rôle, présentation optionnelle) sont
+// fournis un par un par l'utilisateur — placeholders neutres pour les
+// profils manquants, sans rien inventer (ni nom, ni rôle, ni
+// présentation), conformément au brief.
+const contributors = [
+  {
+    name: "Franck HOUNSA",
+    role: "Pasteur, Directeur Exécutif de DCW",
+    bio: undefined,
+    image: franckHounsa,
+  },
+  {
+    name: "Josué SOSSOU",
+    role: "Sociologue, coach de vie, Directeur de la Ligue pour la Lecture de la Bible au Bénin",
+    bio: undefined,
+    image: josueSossou,
+  },
+  {
+    name: "Arnaud Karl JOB",
+    role: "Fondateur d'Adoram Ministry",
+    bio: undefined,
+    image: arnaudKarlJob,
+  },
+  {
+    name: "Joël Arsène NOUMONVI",
+    role: "Éducateur numérique & activiste citoyen",
+    bio: undefined,
+    image: joelArseneNoumonvi,
+  },
+  {
+    name: "Ablawa BOKO",
+    role: "Accompagnatrice en relation d'aide",
+    bio: undefined,
+    image: ablawaBoko,
+  },
+  {
+    name: "Armel AGBOHOUTO",
+    role: "Pasteur & coach formateur",
+    bio: undefined,
+    image: armelAgbohouto,
+  },
+] as const;
+---
+
+<section id="nos-contributeurs" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">Contributeurs</p>
+    <h2 class="contributeurs-title w-full">
+      Des aînés engagés aux côtés de la jeunesse chrétienne.
+    </h2>
+    <p class="w-full text-ink/70">
+      Jeune Chrétien bénéficie également du soutien et de l'expérience
+      d'aînés qui partagent notre préoccupation pour la jeunesse chrétienne
+      et contribuent, par leur disponibilité, à faire avancer cette
+      initiative. Découvrez quelques-uns...
+    </p>
+  </div>
+
+  <div class="contributeurs-grid reveal-group mt-16 lg:mt-20">
+    {
+      contributors.map((contributor) => (
+        <div class="contributor-card">
+          <div class="contributor-photo">
+            {contributor.image ? (
+              <Image
+                src={contributor.image}
+                alt={`Portrait de ${contributor.name}`}
+                class="h-full w-full reveal-photo"
+                widths={[300, 500, 700]}
+                sizes="(min-width: 1024px) 30vw, 90vw"
+                loading="lazy"
+              />
+            ) : (
+              <MediaPlaceholder
+                ratio="4/5"
+                label={`Photo à venir – ${contributor.name}`}
+                class="h-full w-full reveal-photo"
+                hideLabel
+              />
+            )}
+          </div>
+          <div class="contributor-info">
+            <p class="contributor-name">
+              {contributor.name}
+              <span class="contributor-arrow" aria-hidden="true">
+                →
+              </span>
+            </p>
+            <p class="contributor-role">{contributor.role}</p>
+            {contributor.bio && <p class="contributor-bio">{contributor.bio}</p>}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <p class="contributeurs-transition reveal-item mx-auto mt-16 max-w-2xl text-center lg:mt-20">
+    Des expériences différentes, un même désir : contribuer à l'édification
+    et à l'avenir de la jeunesse chrétienne.
+  </p>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .contributeurs-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .contributeurs-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  @media (min-width: 64rem) {
+    .contributeurs-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem 2.5rem;
+    }
+  }
+
+  .contributor-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transition: transform 250ms var(--ease-out-site);
+  }
+
+  .contributor-photo {
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+  .contributor-photo :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 400ms var(--ease-out-site);
+  }
+
+  .contributor-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .contributor-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.25rem;
+    transition: color 200ms var(--ease-out-site);
+  }
+
+  .contributor-arrow {
+    opacity: 0;
+    transform: translateX(-4px);
+    color: var(--color-accent);
+    transition:
+      opacity 200ms var(--ease-out-site),
+      transform 200ms var(--ease-out-site);
+  }
+
+  .contributor-role {
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    font-size: 0.9375rem;
+  }
+
+  .contributor-bio {
+    margin-top: 0.5rem;
+    color: color-mix(in srgb, var(--color-ink) 65%, transparent);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  /* Survol desktop uniquement — souris/trackpad. Rien de nécessaire au
+     tap sur mobile (voir brief section 5). */
+  @media (hover: hover) and (pointer: fine) {
+    .contributor-card:hover {
+      transform: translateY(-4px);
+    }
+    .contributor-card:hover .contributor-photo :global(img) {
+      transform: scale(1.04);
+    }
+    .contributor-card:hover .contributor-name {
+      color: var(--color-accent);
+    }
+    .contributor-card:hover .contributor-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .contributeurs-transition {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+    line-height: 1.5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contributor-card,
+    .contributor-photo :global(img),
+    .contributor-name,
+    .contributor-arrow {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,78 @@
+---
+import { Image } from "astro:assets";
+import terrainActionPhoto from "../assets/photos/terrain-action-qsn-smartphones.jpg";
+
+// Traitement volontairement différent de NotreTerrainAction.astro
+// (homepage, deux colonnes) : ici une grande photo horizontale,
+// pleine largeur, pour la "grande image" demandée par le brief.
+---
+
+<section id="qsn-terrain-action" class="py-24 lg:py-32">
+  <div class="container-content px-4 sm:px-6">
+    <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+      <p class="kicker">Notre terrain d'action</p>
+      <h2 class="terrain-title w-full">Là où les jeunes sont.</h2>
+      <div class="flex w-full flex-col gap-4 text-ink/70">
+        <p>Jeune Chrétien œuvre principalement en ligne.</p>
+        <p>
+          Les réseaux sociaux et les plateformes numériques constituent
+          notre principal espace d'action pour diffuser des contenus,
+          partager des ressources et toucher les jeunes chrétiens.
+        </p>
+        <p>
+          Nous voulons utiliser ces outils pour créer une présence
+          chrétienne pertinente, accessible et proche des réalités de la
+          jeunesse.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="terrain-image mt-16 lg:mt-20">
+    <Image
+      src={terrainActionPhoto}
+      alt="Un groupe de jeunes vu d'en dessous, chacun consultant son smartphone, sous un ciel lumineux."
+      class="terrain-photo h-full w-full reveal-photo"
+      widths={[640, 1024, 1440, 1920]}
+      sizes="100vw"
+      loading="lazy"
+    />
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .terrain-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  /* Pleine largeur, en dehors du container-content — même technique que
+     le triptyque de NotreConstat.astro : une vraie "grande image" qui
+     rompt le rythme contenu de la page. */
+  .terrain-image {
+    aspect-ratio: 4 / 3;
+  }
+  @media (min-width: 64rem) {
+    .terrain-image {
+      aspect-ratio: 21 / 9;
+    }
+  }
+
+  .terrain-photo {
+    display: block;
+    object-fit: cover;
+  }
+</style>

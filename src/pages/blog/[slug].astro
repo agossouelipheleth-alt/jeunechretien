@@ -1,0 +1,159 @@
+---
+// Page statique, prégénérée au build.
+export const prerender = true;
+
+import { getCollection, render } from "astro:content";
+import { Image } from "astro:assets";
+import Layout from "../../layouts/Layout.astro";
+import MediaPlaceholder from "../../components/MediaPlaceholder.astro";
+import SuivreChaineWhatsApp from "../../components/SuivreChaineWhatsApp.astro";
+import { categoryColors, categoryTextColors, defaultCategoryTextColor, formatArticleDate, estimateReadingTime } from "../../lib/blog";
+
+export async function getStaticPaths() {
+  const articles = await getCollection("blog");
+  return articles.map((article) => ({
+    params: { slug: article.id },
+    props: { article },
+  }));
+}
+
+const { article } = Astro.props;
+const { Content } = await render(article);
+---
+
+<Layout
+  title={`${article.data.title} – Jeune Chrétien`}
+  description={article.data.excerpt}
+>
+  <main>
+    <article class="container-content px-4 py-16 sm:px-6 lg:py-20">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-start gap-4">
+        <a href="/blog" class="back-link">← Notre blog</a>
+        <span
+          class="category-badge"
+          style={`background-color: ${categoryColors[article.data.category]}; color: ${categoryTextColors[article.data.category] ?? defaultCategoryTextColor};`}
+        >
+          {article.data.categoryLabel}
+        </span>
+        <h1 class="article-title">{article.data.title}</h1>
+        <p class="article-meta">
+          {article.data.author && <span>{article.data.author}</span>}
+          {article.data.author && <span aria-hidden="true">·</span>}
+          <span>{formatArticleDate(article.data.date)}</span>
+          <span aria-hidden="true">·</span>
+          <span>{estimateReadingTime(article.body ?? "")}</span>
+        </p>
+      </div>
+
+      <div class="reveal-group mx-auto mt-10 max-w-2xl">
+        {
+          article.data.image ? (
+            <Image
+              src={article.data.image}
+              alt={article.data.imageAlt ?? ""}
+              class="article-photo w-full reveal-photo"
+              widths={[400, 640, 800, 1000]}
+              sizes="(min-width: 42rem) 42rem, 100vw"
+              loading="eager"
+            />
+          ) : (
+            <MediaPlaceholder
+              ratio="3/2"
+              label={`Photo à venir – ${article.data.title}`}
+              class="w-full reveal-photo"
+            />
+          )
+        }
+      </div>
+
+      <div class="reveal-group article-body mx-auto mt-10 max-w-2xl">
+        <Content />
+      </div>
+
+      <div class="reveal-group wa-followup mx-auto mt-16 flex max-w-2xl flex-col items-start gap-3 pt-10">
+        <p class="article-wa-title">Tu veux découvrir nos prochains contenus ?</p>
+        <p class="text-ink/70">
+          Suis la chaîne WhatsApp de Jeune Chrétien pour retrouver nos
+          nouveautés.
+        </p>
+        <SuivreChaineWhatsApp location="article" variant="secondary" />
+      </div>
+    </article>
+  </main>
+</Layout>
+
+<style>
+  .back-link {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    text-decoration: none;
+  }
+  .back-link:hover,
+  .back-link:focus-visible {
+    color: var(--color-accent);
+  }
+
+  .category-badge {
+    display: inline-block;
+    border-radius: 9999px;
+    padding-inline: 0.75rem;
+    padding-block: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    /* Couleur fixe : ce badge repose sur un aplat de couleur de catégorie
+       qui ne change jamais avec le thème, le texte doit donc rester sombre. */
+    color: #070500;
+  }
+
+  .article-title {
+    font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.5rem);
+    line-height: 1.2;
+  }
+
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+  }
+
+  .article-photo {
+    display: block;
+    aspect-ratio: 3 / 2;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+  }
+
+  .article-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    color: color-mix(in srgb, var(--color-ink) 82%, transparent);
+    line-height: 1.7;
+  }
+  .article-body :global(h2) {
+    margin-top: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+  .article-body :global(strong) {
+    color: var(--color-ink);
+  }
+  .article-body :global(img) {
+    width: 100%;
+    border-radius: var(--radius-lg);
+    margin-block: 0.5rem;
+  }
+
+  .wa-followup {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .article-wa-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+</style>

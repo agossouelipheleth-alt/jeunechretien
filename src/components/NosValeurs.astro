@@ -1,0 +1,199 @@
+---
+// Section typographique : chaque valeur s'affiche en grand, sa
+// définition se révèle au survol (desktop, souris) ou au clic (partout,
+// y compris mobile — voir le <script> et la media query hover:hover
+// dans le <style>).
+//
+// NOTE : les 7 valeurs sont données par le brief, mais pas leurs
+// définitions — celles ci-dessous sont des propositions (à valider/
+// modifier) reprenant le vocabulaire déjà établi sur le site.
+const values = [
+  {
+    name: "Foi",
+    definition: "Grandir dans une foi vivante, qui éclaire chaque dimension de notre vie.",
+  },
+  {
+    name: "Fraternité",
+    definition: "Cultiver des liens sincères, où chacun se sent écouté et accueilli.",
+  },
+  {
+    name: "Intégrité",
+    definition: "Agir avec honnêteté et cohérence, en accord avec ce que nous croyons.",
+  },
+  {
+    name: "Excellence",
+    definition: "Rechercher la qualité et le sérieux dans tout ce que nous entreprenons.",
+  },
+  {
+    name: "Responsabilité",
+    definition: "Prendre au sérieux notre rôle auprès des jeunes que nous accompagnons.",
+  },
+  {
+    name: "Service",
+    definition: "Mettre nos talents et nos ressources au service des autres.",
+  },
+  {
+    name: "Engagement",
+    definition: "S'investir avec constance pour la jeunesse chrétienne et son avenir.",
+  },
+] as const;
+---
+
+<section id="nos-valeurs" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">Nos valeurs</p>
+    <h2 class="valeurs-title w-full">Ce qui guide notre engagement.</h2>
+  </div>
+
+  <ul class="valeurs-list reveal-group mx-auto mt-16 max-w-2xl lg:mt-20">
+    {
+      values.map((value, i) => (
+        <li class="valeur-item">
+          <button
+            type="button"
+            class="valeur-trigger"
+            aria-expanded="false"
+            aria-controls={`valeur-def-${i}`}
+          >
+            <span>{value.name}</span>
+            <span class="valeur-icon" aria-hidden="true" />
+          </button>
+          <p id={`valeur-def-${i}`} class="valeur-definition">
+            {value.definition}
+          </p>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .valeurs-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .valeurs-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .valeur-item {
+    border-top: 1px solid var(--color-border);
+  }
+  .valeur-item:last-child {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .valeur-trigger {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.25rem;
+    border: none;
+    background: none;
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.5rem, 1.2rem + 2vw, 2.5rem);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-align: left;
+    cursor: pointer;
+  }
+  .valeur-trigger:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+  }
+
+  .valeur-icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .valeur-icon::before,
+  .valeur-icon::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+    transition: transform 200ms var(--ease-out-site);
+  }
+  .valeur-icon::before {
+    width: 100%;
+    height: 2px;
+    transform: translate(-50%, -50%);
+  }
+  .valeur-icon::after {
+    width: 2px;
+    height: 100%;
+    transform: translate(-50%, -50%);
+  }
+  .valeur-trigger[aria-expanded="true"] .valeur-icon::after {
+    transform: translate(-50%, -50%) rotate(90deg) scale(0);
+  }
+
+  .valeur-definition {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+    max-width: 34rem;
+    transition:
+      max-height 300ms var(--ease-out-site),
+      opacity 250ms var(--ease-out-site),
+      padding-bottom 300ms var(--ease-out-site);
+  }
+  .valeur-trigger[aria-expanded="true"] + .valeur-definition {
+    max-height: 8rem;
+    opacity: 1;
+    padding-bottom: 1.5rem;
+  }
+
+  /* Au survol, en plus du clic — souris/trackpad uniquement, pour ne pas
+     interférer avec le tap sur mobile (qui repose sur aria-expanded). */
+  @media (hover: hover) and (pointer: fine) {
+    .valeur-item:hover .valeur-trigger .valeur-icon::after {
+      transform: translate(-50%, -50%) rotate(90deg) scale(0);
+    }
+    .valeur-item:hover .valeur-definition {
+      max-height: 8rem;
+      opacity: 1;
+      padding-bottom: 1.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .valeur-definition,
+    .valeur-icon::before,
+    .valeur-icon::after {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>(".valeur-trigger").forEach((button) => {
+    button.addEventListener("click", () => {
+      const isExpanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!isExpanded));
+    });
+  });
+</script>

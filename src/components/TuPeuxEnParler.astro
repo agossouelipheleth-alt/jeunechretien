@@ -1,0 +1,66 @@
+---
+---
+
+<section id="tu-peux-en-parler" class="container-content px-4 py-24 sm:px-6 lg:py-32">
+  <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+    <p class="kicker">Tu peux en parler</p>
+    <h2 class="parler-title w-full">Tu peux en parler.</h2>
+    <div class="flex w-full flex-col gap-2 text-ink/70">
+      <p>Une question te préoccupe ?</p>
+      <p>Tu traverses une situation et tu aimerais en parler ?</p>
+      <p>Tu souhaites simplement confier une intention de prière ?</p>
+    </div>
+    <p class="parler-highlight">
+      Tu peux nous l'écrire. Tu peux rester anonyme.
+    </p>
+    <a href="/parle-nous" class="btn-primary">Parler à Jeune Chrétien →</a>
+  </div>
+</section>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .parler-title {
+    font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+    line-height: 1.25;
+  }
+
+  .parler-highlight {
+    font-weight: 500;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5rem;
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-accent);
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    font-weight: 500;
+    text-decoration: none;
+    transition: filter 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .btn-primary:hover {
+    filter: brightness(0.88);
+  }
+  .btn-primary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+</style>
