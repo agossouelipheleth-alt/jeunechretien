@@ -103,7 +103,9 @@ const isActive = (href: string) =>
 <style>
   #site-header {
     height: 88px;
-    background-color: var(--color-bg);
+    /* Même fond que le hero (var(--color-hero-bg)) pour unifier le haut
+       de page — voir Hero.astro. */
+    background-color: var(--color-hero-bg);
     box-shadow: none;
     transition:
       height 250ms var(--ease-out-site),
@@ -134,11 +136,15 @@ const isActive = (href: string) =>
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
-  :global([data-theme="dark"]) .site-logo {
-    filter: invert(1);
-  }
+  /* Logo noir/blanc pur à fond transparent. Fond du header non inversé
+     (voir #site-header ci-dessus) : en thème sombre le fond devient
+     sombre, il faut donc inverser le logo (blanc) ; en thème clair le
+     fond reste blanc, le logo original (noir) convient déjà. */
   .site-logo {
     transition: filter 300ms var(--ease-out-site);
+  }
+  :global([data-theme="dark"]) .site-logo {
+    filter: invert(1);
   }
 
   .btn-support {

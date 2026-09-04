@@ -100,6 +100,12 @@ const formats = [
   }
 
   .prayer-cta {
+    /* Réinitialisation de l'apparence native du <button> — sans elle,
+       certains navigateurs/OS peuvent laisser transparaître un style
+       système (bordure/texte bleutés) par-dessus le violet défini
+       ci-dessous. */
+    appearance: none;
+    -webkit-appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -108,15 +114,16 @@ const formats = [
     padding-block: 0.75rem;
     border: 1px solid var(--color-accent);
     border-radius: var(--radius-md);
-    background-color: transparent;
-    color: var(--color-accent);
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
     font-weight: 500;
     font-size: 0.9375rem;
+    font-family: inherit;
     cursor: pointer;
-    transition: background-color 150ms var(--ease-out-site);
+    transition: filter 150ms var(--ease-out-site);
   }
   .prayer-cta:hover {
-    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+    filter: brightness(0.88);
   }
   .prayer-cta:focus-visible {
     outline: 2px solid var(--color-accent);

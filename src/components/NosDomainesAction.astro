@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 // Mêmes photos que le triptyque de NotreConstat.astro (Qui sommes-nous ?)
 // — les trois dimensions Spirituel/Académique/Socio-professionnel sont
 // identiques d'une page à l'autre, la réutilisation crée une continuité
@@ -8,7 +9,18 @@ import constatSpirituel from "../assets/photos/constat-spirituel-priere.png";
 import constatAcademique from "../assets/photos/constat-academique.jpg";
 import constatSocioPro from "../assets/photos/constat-socio-professionnel.jpg";
 
-const domains = [
+interface Domain {
+  number: string;
+  kicker: string;
+  title: string;
+  text: string;
+  image: ImageMetadata;
+  imagePosition?: string;
+  alt: string;
+  href: string;
+}
+
+const domains: Domain[] = [
   {
     number: "01",
     kicker: "Spirituel",
@@ -24,6 +36,7 @@ const domains = [
     title: "Construire son parcours.",
     text: "Des ressources autour des études, de l'orientation et des choix qui peuvent influencer le parcours académique.",
     image: constatAcademique,
+    imagePosition: "top",
     alt: "Une jeune diplômée en toge et toque, fière de son parcours académique.",
     href: "#developpement-personnel",
   },
@@ -36,7 +49,7 @@ const domains = [
     alt: "Un jeune homme au travail dans un atelier de menuiserie, concentré sur son ouvrage.",
     href: "#formation-carriere",
   },
-] as const;
+];
 ---
 
 <section id="nos-domaines-action" class="container-content px-4 py-24 sm:px-6 lg:py-32">
@@ -62,6 +75,7 @@ const domains = [
               src={domain.image}
               alt={domain.alt}
               class="domaine-photo h-full w-full"
+              style={`object-position: ${domain.imagePosition ?? "center"};`}
               widths={[300, 500, 700]}
               sizes="(min-width: 1024px) 30vw, 90vw"
               loading="lazy"

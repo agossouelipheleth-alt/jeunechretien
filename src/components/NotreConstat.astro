@@ -1,10 +1,18 @@
 ---
 import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import constatSpirituel from "../assets/photos/constat-spirituel-priere.png";
 import constatAcademique from "../assets/photos/constat-academique.jpg";
 import constatSocioPro from "../assets/photos/constat-socio-professionnel.jpg";
 
-const dimensions = [
+interface Dimension {
+  label: string;
+  image: ImageMetadata;
+  imagePosition?: string;
+  alt: string;
+}
+
+const dimensions: Dimension[] = [
   {
     label: "Spirituel",
     image: constatSpirituel,
@@ -13,6 +21,7 @@ const dimensions = [
   {
     label: "Académique",
     image: constatAcademique,
+    imagePosition: "top",
     alt: "Une jeune diplômée en toge et toque, fière de son parcours académique.",
   },
   {
@@ -20,7 +29,7 @@ const dimensions = [
     image: constatSocioPro,
     alt: "Un jeune homme au travail dans un atelier de menuiserie, concentré sur son ouvrage.",
   },
-] as const;
+];
 ---
 
 <section id="notre-constat" class="py-24 lg:py-32">
@@ -57,6 +66,7 @@ const dimensions = [
             src={dimension.image}
             alt={dimension.alt}
             class="constat-photo h-full w-full reveal-photo"
+            style={`object-position: ${dimension.imagePosition ?? "center"};`}
             widths={[300, 500, 700, 1000]}
             sizes="(min-width: 64rem) 33vw, 100vw"
           />

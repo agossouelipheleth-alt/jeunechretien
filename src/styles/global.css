@@ -48,6 +48,11 @@
      blanc par défaut ; cette teinte n'est utilisée que pour une section
      qui a explicitement besoin de se distinguer). */
   --color-surface-alt: #f8f6fa;
+
+  /* Fond partagé par le header et le hero — écru chaud, sobre
+     (« version B »). Redéfini en thème sombre plus bas : y reprend
+     simplement --color-bg (fond d'origine, sans teinte particulière). */
+  --color-hero-bg: #faf7f2;
 }
 
 /*
@@ -87,6 +92,10 @@
   --color-surface-alt: #1c1e25;
   --color-border: #2d2f3a;
   --color-on-fill: #15161b;
+  /* Thème sombre : pas de teinte particulière pour le header/hero —
+     reprend le fond d'origine du site (comme avant les essais de
+     couleur du header/hero). */
+  --color-hero-bg: #15161b;
 }
 
 @layer base {

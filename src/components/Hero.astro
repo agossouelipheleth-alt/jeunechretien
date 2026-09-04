@@ -1,6 +1,28 @@
 ---
 import { Image } from "astro:assets";
-import heroCouple from "../assets/photos/hero-couple.png";
+import heroCouplePointing from "../assets/photos/hero-couple-pointing.png";
+import heroCoupleHug from "../assets/photos/hero-couple-hug.png";
+import heroCoupleThumbsUp from "../assets/photos/hero-couple-thumbsup.png";
+
+// Diaporama en fondu enchaîné (brief : la 1ère image apparaît, laisse
+// place à la 2e, puis à la 3e, puis la 1ère revient — boucle infinie).
+// Animation CSS pure (pas de JS) : les 3 images sont superposées, une
+// même animation leur est appliquée avec un décalage négatif chacune
+// (voir .hero-slide-2/-3) pour les déphaser sur le même cycle de 9s.
+const slides = [
+  {
+    image: heroCoupleHug,
+    alt: "Un jeune homme et une jeune femme souriants, elle l'enlaçant par-derrière.",
+  },
+  {
+    image: heroCouplePointing,
+    alt: "Une jeune femme et un jeune homme souriants, côte à côte, elle pointant du doigt vers la gauche.",
+  },
+  {
+    image: heroCoupleThumbsUp,
+    alt: "Un jeune homme et une jeune femme souriants, elle l'enlaçant par-derrière, tous deux le pouce levé.",
+  },
+] as const;
 ---
 
 <section class="hero-section">
@@ -25,17 +47,23 @@ import heroCouple from "../assets/photos/hero-couple.png";
     </div>
 
     <div class="reveal-group hero-media">
-      <Image
-        src={heroCouple}
-        alt="Deux jeunes adultes souriants, un homme et une femme, complices et pouces levés."
-        class="hero-cutout reveal-photo"
-        widths={[400, 600, 800, 1154]}
-        sizes="(min-width: 1024px) 40vw, 70vw"
-        format="png"
-        quality="max"
-        loading="eager"
-        fetchpriority="high"
-      />
+      <div class="hero-slideshow">
+        {
+          slides.map((slide, i) => (
+            <Image
+              src={slide.image}
+              alt={slide.alt}
+              class={`hero-cutout hero-slide hero-slide-${i + 1}`}
+              widths={[400, 600, 800, 1154]}
+              sizes="(min-width: 1024px) 40vw, 70vw"
+              format="webp"
+              quality={85}
+              loading="eager"
+              fetchpriority={i === 0 ? "high" : "auto"}
+            />
+          ))
+        }
+      </div>
     </div>
   </div>
 </section>
@@ -45,6 +73,7 @@ import heroCouple from "../assets/photos/hero-couple.png";
     display: flex;
     min-height: 85vh;
     min-height: 85svh;
+    background-color: var(--color-hero-bg);
   }
   .hero-section > .container-content {
     flex: 1;
@@ -83,26 +112,124 @@ import heroCouple from "../assets/photos/hero-couple.png";
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 20rem;
+  }
+
+  /* Boîte à taille réelle et fixe (contrairement à une boîte qui ne
+     tirerait sa hauteur que du contenu de ses enfants) : les images
+     étant en position absolue à l'intérieur (voir .hero-slide), sans
+     cette taille explicite la boîte s'effondrerait à une hauteur nulle
+     et les photos déborderaient par-dessus les éléments voisins — c'est
+     exactement le bug corrigé ici. */
+  .hero-slideshow {
+    position: relative;
+    width: 100%;
+    max-width: 26rem;
+    margin-inline: auto;
+    aspect-ratio: 4 / 5;
+  }
+
+  @media (min-width: 64rem) {
+    .hero-slideshow {
+      max-width: 32rem;
+    }
   }
 
   .hero-cutout {
-    width: auto;
-    max-width: 100%;
-    height: auto;
-    max-height: 78vh;
-    max-height: 78svh;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
-    /* Le hero est visible dès le chargement — un délai + une durée plus
-       longue rendent le mouvement perceptible (sinon il se joue avant
-       même que l'œil ait le temps de le voir). */
-    transition-delay: 150ms;
-    transition-duration: 800ms;
   }
 
+  /* Les 3 images se superposent exactement ; seule l'opacité change.
+     Chaque image a un « tour » de 2.5s (cycle total 7.5s = 3 × 2.5s) :
+     0.5s de fondu entrant, 2s de plein affichage, 0.5s de fondu sortant.
+     Le fondu sortant d'une image déborde volontairement de 0.5s sur le
+     tour suivant, exactement superposé au fondu entrant de l'image qui
+     la remplace (opacités inverses, linéaires : leur somme reste
+     toujours égale à 1). Résultat : à tout instant, au moins une image
+     est à pleine opacité ou les deux se chevauchent en fondu — le fond
+     de la section n'est jamais visible, contrairement à l'ancienne
+     version qui laissait un blanc entre deux photos. */
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    animation: hero-crossfade 7.5s linear infinite;
+  }
+  /* Décalage négatif : chaque image démarre à un point différent de la
+     même animation, ce qui crée le cycle 1 → 2 → 3 → 1 → … */
+  .hero-slide-1 {
+    animation-delay: -7.5s;
+  }
+  .hero-slide-2 {
+    animation-delay: -5s;
+  }
+  .hero-slide-3 {
+    animation-delay: -2.5s;
+  }
+
+  @keyframes hero-crossfade {
+    0% {
+      opacity: 0;
+    }
+    6.667% {
+      opacity: 1;
+    }
+    33.333% {
+      opacity: 1;
+    }
+    40%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Mobile/tablette uniquement : la 2e image est retirée du diaporama,
+     qui repasse d'un cycle à 3 photos (7.5s / 2.5s de tour chacune) à un
+     cycle à 2 photos (5s / 2.5s de tour chacune — même durée de tour et
+     mêmes proportions fondu/affichage/chevauchement par image). */
   @media (max-width: 63.9375rem) {
-    .hero-cutout {
-      max-height: 32rem;
+    .hero-slide-2 {
+      display: none;
+    }
+    .hero-slide-1,
+    .hero-slide-3 {
+      animation-name: hero-crossfade-duo;
+      animation-duration: 5s;
+    }
+    .hero-slide-1 {
+      animation-delay: -5s;
+    }
+    .hero-slide-3 {
+      animation-delay: -2.5s;
+    }
+  }
+
+  @keyframes hero-crossfade-duo {
+    0% {
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 1;
+    }
+    60%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Pas d'animation permanente pour qui la refuse : la 1ère image reste
+     simplement affichée. */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-slide {
+      animation: none;
+      opacity: 0;
+    }
+    .hero-slide-1 {
+      opacity: 1;
     }
   }
 
