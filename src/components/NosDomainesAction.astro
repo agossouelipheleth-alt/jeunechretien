@@ -2,11 +2,11 @@
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 // Mêmes photos que le triptyque de NotreConstat.astro (Qui sommes-nous ?)
-// — les trois dimensions Spirituel/Académique/Socio-professionnel sont
+// — les trois dimensions Spirituel/Personnel/Socio-professionnel sont
 // identiques d'une page à l'autre, la réutilisation crée une continuité
 // visuelle entre les deux.
 import constatSpirituel from "../assets/photos/constat-spirituel-priere.png";
-import constatAcademique from "../assets/photos/constat-academique.jpg";
+import constatPersonnel from "../assets/photos/constat-personnel-portrait.jpg";
 import constatSocioPro from "../assets/photos/constat-socio-professionnel.jpg";
 
 interface Domain {
@@ -32,12 +32,12 @@ const domains: Domain[] = [
   },
   {
     number: "02",
-    kicker: "Académique",
-    title: "Construire son parcours.",
-    text: "Des ressources autour des études, de l'orientation et des choix qui peuvent influencer le parcours académique.",
-    image: constatAcademique,
+    kicker: "Personnel",
+    title: "Construire sa personne.",
+    text: "Des ressources pour mieux se connaître, développer ses talents et renforcer sa confiance en soi.",
+    image: constatPersonnel,
     imagePosition: "top",
-    alt: "Une jeune diplômée en toge et toque, fière de son parcours académique.",
+    alt: "Une jeune femme souriante, le regard tourné sur le côté, dans un moment de légèreté.",
     href: "#developpement-personnel",
   },
   {
@@ -62,7 +62,7 @@ const domains: Domain[] = [
       Notre action s'inscrit dans plusieurs dimensions de la vie des jeunes
       chrétiens. Nous voulons leur proposer des contenus, des ressources et
       des initiatives qui répondent à leurs réalités spirituelles,
-      académiques et socio-professionnelles.
+      personnelles et socio-professionnelles.
     </p>
   </div>
 

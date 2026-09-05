@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import MediaPlaceholder from "./MediaPlaceholder.astro";
 import franckHounsa from "../assets/photos/contributeur-franck-hounsa.png";
 import arnaudKarlJob from "../assets/photos/contributeur-arnaud-karl-job.jpg";
@@ -7,12 +8,21 @@ import joelArseneNoumonvi from "../assets/photos/contributeur-joel-arsene-noumon
 import ablawaBoko from "../assets/photos/contributeur-ablawa-boko-laptop.png";
 import armelAgbohouto from "../assets/photos/contributeur-armel-agbohouto.jpg";
 import josueSossou from "../assets/photos/contributeur-josue-sossou.png";
+import angeloKlanclounon from "../assets/photos/contributeur-angelo-klanclounon.png";
+
+interface Contributor {
+  name: string;
+  role: string;
+  bio?: string;
+  image?: ImageMetadata;
+  imagePosition?: string;
+}
 
 // Les 6 profils (photo, nom, rôle, présentation optionnelle) sont
 // fournis un par un par l'utilisateur — placeholders neutres pour les
 // profils manquants, sans rien inventer (ni nom, ni rôle, ni
 // présentation), conformément au brief.
-const contributors = [
+const contributors: Contributor[] = [
   {
     name: "Franck HOUNSA",
     role: "Pasteur, Directeur Exécutif de DCW",
@@ -49,7 +59,13 @@ const contributors = [
     bio: undefined,
     image: armelAgbohouto,
   },
-] as const;
+  {
+    name: "Angelo KLANCLOUNON",
+    role: "Coach-formateur, Expert en communication",
+    bio: undefined,
+    image: angeloKlanclounon,
+  },
+];
 ---
 
 <section id="nos-contributeurs" class="container-content px-4 py-24 sm:px-6 lg:py-32">
@@ -76,6 +92,7 @@ const contributors = [
                 src={contributor.image}
                 alt={`Portrait de ${contributor.name}`}
                 class="h-full w-full reveal-photo"
+                style={`object-position: ${contributor.imagePosition ?? "center"};`}
                 widths={[300, 500, 700]}
                 sizes="(min-width: 1024px) 30vw, 90vw"
                 loading="lazy"

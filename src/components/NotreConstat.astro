@@ -2,7 +2,7 @@
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import constatSpirituel from "../assets/photos/constat-spirituel-priere.png";
-import constatAcademique from "../assets/photos/constat-academique.jpg";
+import constatPersonnel from "../assets/photos/constat-personnel-portrait.jpg";
 import constatSocioPro from "../assets/photos/constat-socio-professionnel.jpg";
 
 interface Dimension {
@@ -19,10 +19,10 @@ const dimensions: Dimension[] = [
     alt: "Une jeune femme en prière, mains jointes, assise dans son salon près d'une croix murale.",
   },
   {
-    label: "Académique",
-    image: constatAcademique,
+    label: "Personnel",
+    image: constatPersonnel,
     imagePosition: "top",
-    alt: "Une jeune diplômée en toge et toque, fière de son parcours académique.",
+    alt: "Une jeune femme souriante, le regard tourné sur le côté, dans un moment de légèreté.",
   },
   {
     label: "Socio-professionnel",
@@ -51,7 +51,7 @@ const dimensions: Dimension[] = [
         </p>
         <p>
           C'est pourquoi nous pensons que l'accompagnement de la jeunesse
-          chrétienne doit également prendre en compte son devenir académique
+          chrétienne doit également prendre en compte son devenir personnel
           et socio-professionnel.
         </p>
       </div>
