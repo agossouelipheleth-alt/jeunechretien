@@ -39,6 +39,7 @@ const comment = [
     path: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9.5 9.25c0-1.1 1.1-1.75 2.5-1.75s2.5.75 2.5 1.75-1 1.5-2.5 1.75-2.5.65-2.5 1.75 1.1 1.75 2.5 1.75 2.5-.65 2.5-1.75"/>',
     buttonLabel: "Faire un don",
     buttonAttrs: { "data-don-open": "" },
+    primary: true,
   },
   {
     title: "Soutenir un projet particulier",
@@ -54,7 +55,7 @@ const comment = [
     text2: "Ensemble, nous pouvons étudier des possibilités de partenariat et identifier les domaines dans lesquels nos actions peuvent se compléter.",
     path: '<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/>',
     buttonLabel: "Proposer un partenariat",
-    href: "mailto:contact@jeunechretien.org",
+    buttonAttrs: { "data-tpp-open": "autre" },
   },
   {
     title: "Devenir un relais de notre mission",
@@ -63,6 +64,7 @@ const comment = [
     path: '<path d="M3 10v4h3l9 5V5L6 10H3z"/><path d="M17 9a3.5 3.5 0 0 1 0 6"/>',
     buttonLabel: "Découvrir nos contenus",
     href: "/blog",
+    primary: true,
   },
 ] as const;
 
@@ -183,11 +185,18 @@ const usages = [
               <p class="text-ink/70">{item.text}</p>
               <p class="text-ink/70">{item.text2}</p>
               {"buttonAttrs" in item ? (
-                <button type="button" class="btn-card-action" {...item.buttonAttrs}>
+                <button
+                  type="button"
+                  class={`btn-card-action ${"primary" in item && item.primary ? "btn-card-action-primary" : ""}`}
+                  {...item.buttonAttrs}
+                >
                   {item.buttonLabel}
                 </button>
               ) : (
-                <a href={item.href} class="btn-card-action">
+                <a
+                  href={item.href}
+                  class={`btn-card-action ${"primary" in item && item.primary ? "btn-card-action-primary" : ""}`}
+                >
                   {item.buttonLabel}
                 </a>
               )}
@@ -386,6 +395,15 @@ const usages = [
   }
   .btn-card-action:hover {
     background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+
+  .btn-card-action-primary {
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+  }
+  .btn-card-action-primary:hover {
+    background-color: var(--color-accent);
+    filter: brightness(0.88);
   }
 
   /* --- Cartes (sections 2 et 3) ---------------------------------------- */
