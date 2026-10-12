@@ -108,7 +108,10 @@ const birthDateFormatter = new Intl.DateTimeFormat("fr-FR", {
       <div>
         <p class="admin-kicker">Espace interne</p>
         <h1 class="admin-title">Rejoignez-nous – Candidatures</h1>
-        <p class="admin-subnav"><a href="/admin/messages">Voir les messages « Parle-nous » →</a></p>
+        <p class="admin-subnav">
+          <a href="/admin/messages">Messages « Parle-nous »</a> ·{" "}
+          <a href="/admin/dons">Dons « Soutenez-nous »</a>
+        </p>
       </div>
       <form method="POST" action="/api/admin/logout">
         <button type="submit" class="logout-button">Se déconnecter</button>

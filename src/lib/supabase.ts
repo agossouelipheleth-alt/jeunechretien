@@ -12,6 +12,8 @@ export type CandidatureDisponibilite =
   | "quelques_heures_mois"
   | "selon_besoins";
 
+export type DonStatut = "en_attente_configuration" | "initie" | "en_attente" | "reussi" | "echoue";
+
 export interface ParleNousMessage {
   id: string;
   category: MessageCategory;
@@ -49,6 +51,21 @@ export interface Candidature {
   certifie_exactitude: boolean;
   a_accepte_confidentialite: boolean;
   statut: CandidatureStatut;
+  notes_internes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Don {
+  id: string;
+  reference: string;
+  montant: number;
+  devise: string;
+  email: string;
+  operateur: string;
+  telephone: string;
+  statut: DonStatut;
+  reference_prestataire: string | null;
   notes_internes: string | null;
   created_at: string;
   updated_at: string;
@@ -115,6 +132,26 @@ interface Database {
         }>;
         Relationships: [];
       };
+      dons: {
+        Row: Don;
+        Insert: {
+          reference: string;
+          montant: number;
+          devise?: string;
+          email: string;
+          operateur: string;
+          telephone: string;
+          statut?: DonStatut;
+          reference_prestataire?: string | null;
+          notes_internes?: string | null;
+        };
+        Update: Partial<{
+          statut: DonStatut;
+          reference_prestataire: string | null;
+          notes_internes: string | null;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -127,6 +164,8 @@ export type MessageInsertPayload = Database["public"]["Tables"]["messages"]["Ins
 export type MessageUpdatePayload = Database["public"]["Tables"]["messages"]["Update"];
 export type CandidatureInsertPayload = Database["public"]["Tables"]["candidatures"]["Insert"];
 export type CandidatureUpdatePayload = Database["public"]["Tables"]["candidatures"]["Update"];
+export type DonInsertPayload = Database["public"]["Tables"]["dons"]["Insert"];
+export type DonUpdatePayload = Database["public"]["Tables"]["dons"]["Update"];
 
 let cachedClient: SupabaseClient<Database> | null = null;
 
@@ -189,4 +228,13 @@ export async function updateCandidature(
   payload: CandidatureUpdatePayload
 ) {
   return client.from("candidatures").update(payload as never).eq("id", id);
+}
+
+export async function insertDon(client: SupabaseClient<Database>, payload: DonInsertPayload) {
+  const result = await client.from("dons").insert(payload as never).select("id, reference").single();
+  return result as { data: { id: string; reference: string } | null; error: { message: string } | null };
+}
+
+export async function updateDon(client: SupabaseClient<Database>, id: string, payload: DonUpdatePayload) {
+  return client.from("dons").update(payload as never).eq("id", id);
 }

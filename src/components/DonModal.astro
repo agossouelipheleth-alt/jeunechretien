@@ -1,0 +1,1024 @@
+---
+// Modale globale de don Mobile Money — "Soutenez-nous". Même architecture
+// que TuPeuxEnParlerModal.astro (montée une fois dans Layout.astro,
+// ouverture par délégation via [data-don-open] ou window.openDonModal()),
+// mais en 5 étapes (montant → e-mail → opérateur → téléphone →
+// récapitulatif) suivies d'un état de résultat.
+//
+// IMPORTANT : aucun prestataire de paiement Mobile Money n'est connecté
+// pour l'instant (voir src/lib/dons-config.ts). Le parcours ci-dessous est
+// entièrement fonctionnel côté interface, mais /api/dons ne fait
+// qu'enregistrer une intention de don tant qu'aucun prestataire n'est
+// configuré — jamais un paiement réellement effectué.
+import {
+  MOBILE_MONEY_OPERATORS,
+  SUGGESTED_AMOUNTS,
+  MIN_AMOUNT,
+  MAX_AMOUNT,
+  CURRENCY,
+} from "../lib/dons-config";
+---
+
+<div id="don-overlay" class="don-overlay" hidden>
+  <div id="don-modal" class="don-modal" role="dialog" aria-modal="true" aria-labelledby="don-title" tabindex="-1">
+    <button type="button" id="don-close" class="don-close" aria-label="Fermer">
+      <span aria-hidden="true">×</span>
+    </button>
+
+    <div id="don-flow">
+      <p class="don-kicker">Soutenir Jeune Chrétien</p>
+      <h2 id="don-title" class="don-title">Soutenir Jeune Chrétien</h2>
+      <p class="don-intro">
+        Votre contribution nous aide à développer nos contenus, nos
+        ressources et nos initiatives en faveur de la jeunesse chrétienne.
+        Merci de prendre part à cette mission.
+      </p>
+
+      <form id="don-form" novalidate>
+        <div class="don-honeypot" aria-hidden="true">
+          <label for="don-website">Laisser ce champ vide</label>
+          <input type="text" id="don-website" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <!-- Étape 1 — Montant -->
+        <div id="don-step-montant" class="don-step" data-step="montant">
+          <button type="button" class="don-back" data-back hidden>
+            <span aria-hidden="true">←</span> Retour
+          </button>
+          <p class="don-step-label" id="don-amount-label">Choisissez un montant</p>
+          <div class="don-amount-grid" aria-labelledby="don-amount-label">
+            {
+              SUGGESTED_AMOUNTS.map((amount) => (
+                <button type="button" class="don-amount-card" data-amount={amount} aria-pressed="false">
+                  {amount.toLocaleString("fr-FR")} {CURRENCY}
+                </button>
+              ))
+            }
+          </div>
+          <div class="don-field-group don-custom-amount">
+            <label class="don-field-label" for="don-amount-custom">Autre montant ({CURRENCY})</label>
+            <input
+              type="number"
+              id="don-amount-custom"
+              class="don-input"
+              min={MIN_AMOUNT}
+              max={MAX_AMOUNT}
+              step="1"
+              inputmode="numeric"
+              placeholder={`Entre ${MIN_AMOUNT} et ${MAX_AMOUNT.toLocaleString("fr-FR")}`}
+            />
+          </div>
+          <p id="don-error-montant" class="don-error" role="alert" hidden></p>
+          <button type="button" class="don-next" data-next="montant">Continuer</button>
+        </div>
+
+        <!-- Étape 2 — E-mail -->
+        <div id="don-step-email" class="don-step" data-step="email" hidden>
+          <button type="button" class="don-back" data-back>
+            <span aria-hidden="true">←</span> Retour
+          </button>
+          <div class="don-field-group">
+            <label class="don-field-label" for="don-email">Adresse e-mail</label>
+            <input
+              type="email"
+              id="don-email"
+              name="email"
+              class="don-input"
+              autocomplete="email"
+              placeholder="exemple@domaine.com"
+            />
+            <p class="don-hint">
+              Utilisée pour le suivi de ton don et, une fois le service
+              disponible, une confirmation par e-mail.
+            </p>
+          </div>
+          <p id="don-error-email" class="don-error" role="alert" hidden></p>
+          <button type="button" class="don-next" data-next="email">Continuer</button>
+        </div>
+
+        <!-- Étape 3 — Opérateur Mobile Money -->
+        <div id="don-step-operateur" class="don-step" data-step="operateur" hidden>
+          <button type="button" class="don-back" data-back>
+            <span aria-hidden="true">←</span> Retour
+          </button>
+          <p class="don-step-label" id="don-operator-label">Choisissez votre opérateur Mobile Money</p>
+          <div class="don-operator-grid" aria-labelledby="don-operator-label">
+            {
+              MOBILE_MONEY_OPERATORS.map((operator) => (
+                <button
+                  type="button"
+                  class="don-operator-card"
+                  data-operator={operator.key}
+                  aria-pressed="false"
+                >
+                  <svg
+                    class="don-operator-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="7" y="2" width="10" height="20" rx="2" />
+                    <path d="M10 6h4" />
+                    <circle cx="12" cy="17.5" r="1.25" fill="currentColor" stroke="none" />
+                  </svg>
+                  <span>{operator.label}</span>
+                </button>
+              ))
+            }
+          </div>
+          <p id="don-error-operateur" class="don-error" role="alert" hidden></p>
+          <button type="button" class="don-next" data-next="operateur">Continuer</button>
+        </div>
+
+        <!-- Étape 4 — Téléphone -->
+        <div id="don-step-telephone" class="don-step" data-step="telephone" hidden>
+          <button type="button" class="don-back" data-back>
+            <span aria-hidden="true">←</span> Retour
+          </button>
+          <div class="don-field-group">
+            <label class="don-field-label" for="don-telephone">Numéro Mobile Money</label>
+            <input
+              type="tel"
+              id="don-telephone"
+              name="telephone"
+              class="don-input"
+              autocomplete="tel"
+              placeholder="+229 XX XX XX XX"
+            />
+            <p class="don-hint">
+              Jeune Chrétien ne te demandera jamais ton code PIN ou ton mot
+              de passe Mobile Money.
+            </p>
+          </div>
+          <p id="don-error-telephone" class="don-error" role="alert" hidden></p>
+          <button type="button" class="don-next" data-next="telephone">Continuer</button>
+        </div>
+
+        <!-- Étape 5 — Récapitulatif et confirmation -->
+        <div id="don-step-recap" class="don-step" data-step="recap" hidden>
+          <button type="button" class="don-back" data-back>
+            <span aria-hidden="true">←</span> Retour
+          </button>
+          <p class="don-step-label">Récapitulatif</p>
+          <dl class="don-summary">
+            <div>
+              <dt>Montant du don</dt>
+              <dd id="don-summary-montant"></dd>
+            </div>
+            <div>
+              <dt>Adresse e-mail</dt>
+              <dd id="don-summary-email"></dd>
+            </div>
+            <div>
+              <dt>Opérateur Mobile Money</dt>
+              <dd id="don-summary-operateur"></dd>
+            </div>
+            <div>
+              <dt>Numéro de téléphone</dt>
+              <dd id="don-summary-telephone"></dd>
+            </div>
+            <div>
+              <dt>Frais éventuels</dt>
+              <dd>Communiqués à l'activation du paiement en ligne</dd>
+            </div>
+            <div class="don-summary-total">
+              <dt>Montant total</dt>
+              <dd id="don-summary-total"></dd>
+            </div>
+          </dl>
+
+          <label class="don-confirm-option">
+            <input type="checkbox" id="don-confirm" />
+            <span>Je confirme vouloir effectuer ce don du montant indiqué au profit de Jeune Chrétien.</span>
+          </label>
+
+          <p id="don-error-recap" class="don-error" role="alert" hidden></p>
+          <button type="submit" class="don-submit" id="don-submit" disabled>
+            Continuer vers le paiement
+          </button>
+        </div>
+      </form>
+
+      <!-- Étape de traitement -->
+      <div id="don-step-processing" class="don-step don-result" data-step="processing" hidden>
+        <p class="don-result-text">
+          Votre demande a été transmise. Merci de patienter pendant la
+          confirmation…
+        </p>
+      </div>
+
+      <!-- Résultat final -->
+      <div id="don-step-result" class="don-step don-result" data-step="result" hidden tabindex="-1">
+        <h2 id="don-result-title" class="don-title"></h2>
+        <p id="don-result-text" class="don-result-text"></p>
+        <p id="don-result-reference" class="don-result-reference" hidden></p>
+        <div class="don-result-actions">
+          <button type="button" id="don-result-retry" class="don-back-inline" hidden>Revenir au formulaire</button>
+          <a href="mailto:contact@jeunechretien.org" class="don-submit don-result-contact">
+            Nous écrire directement
+          </a>
+          <button type="button" id="don-result-close" class="don-close-inline">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* --- Overlay & modale (identique à TuPeuxEnParlerModal.astro) ------- */
+  .don-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background-color: rgb(7 5 0 / 0.6);
+    opacity: 0;
+    transition: opacity 200ms var(--ease-out-site);
+  }
+  .don-overlay.is-open {
+    opacity: 1;
+  }
+
+  .don-modal {
+    position: relative;
+    width: 100%;
+    max-width: 30rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem 1.75rem;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    box-shadow: 0 24px 64px -12px rgb(7 5 0 / 0.4);
+    transform: translateY(10px);
+    opacity: 0;
+    outline: none;
+    transition:
+      transform 250ms var(--ease-out-site),
+      opacity 250ms var(--ease-out-site);
+  }
+  .don-modal:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 6px;
+  }
+  @media (min-width: 40rem) {
+    .don-modal {
+      padding: 2.5rem;
+    }
+  }
+  .don-overlay.is-open .don-modal {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .don-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 9999px;
+    background: none;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color 150ms var(--ease-out-site),
+      color 150ms var(--ease-out-site);
+  }
+  .don-close:hover {
+    background-color: color-mix(in srgb, var(--color-ink) 8%, transparent);
+    color: var(--color-ink);
+  }
+  .don-close:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .don-kicker {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .don-title {
+    margin-bottom: 0.75rem;
+    font-size: clamp(1.25rem, 1.1rem + 1vw, 1.625rem);
+    line-height: 1.25;
+    padding-right: 1.5rem;
+  }
+  .don-intro {
+    margin-bottom: 1.5rem;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  /* --- Étapes ----------------------------------------------------------- */
+  .don-step {
+    opacity: 0;
+    transition: opacity 200ms var(--ease-out-site);
+  }
+  .don-step:not([hidden]) {
+    opacity: 1;
+  }
+
+  .don-back,
+  .don-back-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-bottom: 1rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .don-back:hover,
+  .don-back-inline:hover {
+    color: var(--color-ink);
+  }
+
+  .don-step-label {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  /* --- Montants ------------------------------------------------------- */
+  .don-amount-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .don-amount-card {
+    padding: 0.875rem 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      border-color 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site),
+      color 150ms var(--ease-out-site);
+  }
+  .don-amount-card:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+  .don-amount-card[aria-pressed="true"] {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+  }
+  .don-amount-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .don-custom-amount {
+    margin-bottom: 0.5rem;
+  }
+
+  /* --- Champs ----------------------------------------------------------- */
+  .don-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+  }
+  .don-field-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  .don-input {
+    width: 100%;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    transition:
+      border-color 150ms var(--ease-out-site),
+      box-shadow 150ms var(--ease-out-site);
+  }
+  .don-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+  .don-input[aria-invalid="true"] {
+    border-color: #b3261e;
+  }
+  .don-hint {
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+  }
+
+  .don-honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+  }
+
+  /* --- Opérateurs ------------------------------------------------------- */
+  .don-operator-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (min-width: 26rem) {
+    .don-operator-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .don-operator-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-weight: 500;
+    font-size: 0.875rem;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      border-color 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site);
+  }
+  .don-operator-card:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+  .don-operator-card[aria-pressed="true"] {
+    border-color: var(--color-accent);
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+  .don-operator-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .don-operator-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--color-accent);
+  }
+
+  /* --- Récapitulatif ------------------------------------------------------ */
+  .don-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem 1.125rem;
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, var(--color-ink) 4%, transparent);
+    font-size: 0.875rem;
+  }
+  .don-summary > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .don-summary dt {
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+  .don-summary dd {
+    font-weight: 500;
+    text-align: right;
+  }
+  .don-summary-total {
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .don-summary-total dt,
+  .don-summary-total dd {
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  .don-confirm-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+  .don-confirm-option input {
+    flex-shrink: 0;
+    margin-top: 0.1875rem;
+    accent-color: var(--color-accent);
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  /* --- Erreurs ---------------------------------------------------------- */
+  .don-error {
+    margin-bottom: 1rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, #b3261e 8%, transparent);
+    color: #8c1d17;
+    font-size: 0.875rem;
+  }
+  :root[data-theme="dark"] .don-error {
+    color: #ffb4ab;
+    background-color: color-mix(in srgb, #ffb4ab 12%, transparent);
+  }
+
+  /* --- Boutons ------------------------------------------------------------ */
+  .don-next,
+  .don-submit {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    padding-block: 0.8125rem;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: filter 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .don-next:hover,
+  .don-submit:hover {
+    filter: brightness(0.9);
+  }
+  .don-next:focus-visible,
+  .don-submit:focus-visible {
+    outline-color: var(--color-accent);
+  }
+  .don-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: none;
+  }
+
+  /* --- Résultat ------------------------------------------------------------ */
+  .don-result {
+    text-align: center;
+    outline: none;
+  }
+  .don-result-text {
+    margin-bottom: 1rem;
+    color: color-mix(in srgb, var(--color-ink) 75%, transparent);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+  .don-result-reference {
+    margin-bottom: 1.25rem;
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+  }
+  .don-result-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .don-result-contact {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+  .don-result-contact:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+    filter: none;
+  }
+  .don-close-inline {
+    padding: 0.625rem;
+    border: none;
+    background: none;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .don-close-inline:hover {
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .don-overlay,
+    .don-modal,
+    .don-step {
+      transition: none !important;
+    }
+  }
+</style>
+
+<script define:vars={{ minAmount: MIN_AMOUNT, maxAmount: MAX_AMOUNT, currency: CURRENCY }}>
+  const overlay = document.getElementById("don-overlay");
+  const modal = document.getElementById("don-modal");
+  const closeButton = document.getElementById("don-close");
+  const form = document.getElementById("don-form");
+  const websiteInput = document.getElementById("don-website");
+
+  const steps = ["montant", "email", "operateur", "telephone", "recap"];
+  const stepEls = {
+    montant: document.getElementById("don-step-montant"),
+    email: document.getElementById("don-step-email"),
+    operateur: document.getElementById("don-step-operateur"),
+    telephone: document.getElementById("don-step-telephone"),
+    recap: document.getElementById("don-step-recap"),
+  };
+  const processingEl = document.getElementById("don-step-processing");
+  const resultEl = document.getElementById("don-step-result");
+  const resultTitle = document.getElementById("don-result-title");
+  const resultText = document.getElementById("don-result-text");
+  const resultReference = document.getElementById("don-result-reference");
+  const resultRetry = document.getElementById("don-result-retry");
+  const resultClose = document.getElementById("don-result-close");
+
+  const amountButtons = document.querySelectorAll(".don-amount-card");
+  const amountCustomInput = document.getElementById("don-amount-custom");
+  const emailInput = document.getElementById("don-email");
+  const operatorButtons = document.querySelectorAll(".don-operator-card");
+  const phoneInput = document.getElementById("don-telephone");
+  const confirmCheckbox = document.getElementById("don-confirm");
+  const submitButton = document.getElementById("don-submit");
+
+  let state = {
+    montant: null,
+    email: "",
+    operateur: null,
+    telephone: "",
+  };
+  let currentStepIndex = 0;
+  let lastFocusedElement = null;
+
+  function fmt(n) {
+    return `${n.toLocaleString("fr-FR")} ${currency}`;
+  }
+
+  function showStep(name) {
+    Object.entries(stepEls).forEach(([key, el]) => {
+      if (!el) return;
+      el.hidden = key !== name;
+    });
+    if (processingEl) processingEl.hidden = true;
+    if (resultEl) resultEl.hidden = true;
+    currentStepIndex = steps.indexOf(name);
+    const backBtn = stepEls[name]?.querySelector("[data-back]");
+    if (backBtn) backBtn.hidden = currentStepIndex === 0;
+  }
+
+  function showProcessing() {
+    Object.values(stepEls).forEach((el) => el && (el.hidden = true));
+    if (resultEl) resultEl.hidden = true;
+    if (processingEl) processingEl.hidden = false;
+  }
+
+  function showResult({ title, text, reference, showRetry }) {
+    Object.values(stepEls).forEach((el) => el && (el.hidden = true));
+    if (processingEl) processingEl.hidden = true;
+    if (resultEl) {
+      resultEl.hidden = false;
+      window.setTimeout(() => resultEl.focus(), 50);
+    }
+    if (resultTitle) resultTitle.textContent = title;
+    if (resultText) resultText.textContent = text;
+    if (reference && resultReference) {
+      resultReference.textContent = `Référence : ${reference}`;
+      resultReference.hidden = false;
+    } else if (resultReference) {
+      resultReference.hidden = true;
+    }
+    if (resultRetry) resultRetry.hidden = !showRetry;
+  }
+
+  function clearError(step) {
+    const el = document.getElementById(`don-error-${step}`);
+    if (!el) return;
+    el.hidden = true;
+    el.textContent = "";
+  }
+  function showError(step, message) {
+    const el = document.getElementById(`don-error-${step}`);
+    if (!el) return;
+    el.textContent = message;
+    el.hidden = false;
+  }
+
+  function isPlausibleEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+  function isPlausiblePhone(value) {
+    const digits = value.replace(/[^\d]/g, "");
+    return /^[0-9+()\-.\s]+$/.test(value) && [8, 10, 11].includes(digits.length);
+  }
+
+  function updateSelectedAmountUI(amount) {
+    amountButtons.forEach((btn) => {
+      btn.setAttribute("aria-pressed", String(Number(btn.dataset.amount) === amount));
+    });
+  }
+
+  amountButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const amount = Number(btn.dataset.amount);
+      state.montant = amount;
+      if (amountCustomInput) amountCustomInput.value = "";
+      updateSelectedAmountUI(amount);
+      clearError("montant");
+    });
+  });
+
+  amountCustomInput?.addEventListener("input", () => {
+    const value = amountCustomInput.value.trim();
+    state.montant = value ? Number(value) : null;
+    updateSelectedAmountUI(-1);
+    clearError("montant");
+  });
+
+  operatorButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.operateur = btn.dataset.operator ?? null;
+      operatorButtons.forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      clearError("operateur");
+    });
+  });
+
+  function updateSubmitState() {
+    if (!submitButton) return;
+    submitButton.disabled = !confirmCheckbox?.checked;
+  }
+  confirmCheckbox?.addEventListener("change", updateSubmitState);
+
+  function fillSummary() {
+    const total = typeof state.montant === "number" ? fmt(state.montant) : "—";
+    const operatorLabel =
+      document.querySelector(`.don-operator-card[data-operator="${state.operateur}"]`)?.textContent?.trim() ??
+      state.operateur ??
+      "—";
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+    setText("don-summary-montant", total);
+    setText("don-summary-email", state.email || "—");
+    setText("don-summary-operateur", operatorLabel);
+    setText("don-summary-telephone", state.telephone || "—");
+    setText("don-summary-total", total);
+  }
+
+  document.querySelectorAll("[data-next]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const step = btn.dataset.next;
+      clearError(step);
+
+      if (step === "montant") {
+        if (
+          typeof state.montant !== "number" ||
+          !Number.isFinite(state.montant) ||
+          state.montant < minAmount ||
+          state.montant > maxAmount
+        ) {
+          showError(
+            "montant",
+            `Choisis un montant suggéré ou saisis un montant entre ${minAmount.toLocaleString("fr-FR")} et ${maxAmount.toLocaleString("fr-FR")} ${currency}.`
+          );
+          return;
+        }
+        showStep("email");
+        emailInput?.focus();
+        return;
+      }
+
+      if (step === "email") {
+        const value = emailInput?.value.trim() ?? "";
+        if (!value || !isPlausibleEmail(value)) {
+          showError("email", "Merci d'indiquer une adresse e-mail valide.");
+          emailInput?.setAttribute("aria-invalid", "true");
+          return;
+        }
+        emailInput?.removeAttribute("aria-invalid");
+        state.email = value;
+        showStep("operateur");
+        return;
+      }
+
+      if (step === "operateur") {
+        if (!state.operateur) {
+          showError("operateur", "Merci de sélectionner un opérateur Mobile Money.");
+          return;
+        }
+        showStep("telephone");
+        phoneInput?.focus();
+        return;
+      }
+
+      if (step === "telephone") {
+        const value = phoneInput?.value.trim() ?? "";
+        if (!value || !isPlausiblePhone(value)) {
+          showError("telephone", "Merci d'indiquer un numéro Mobile Money valide.");
+          phoneInput?.setAttribute("aria-invalid", "true");
+          return;
+        }
+        phoneInput?.removeAttribute("aria-invalid");
+        state.telephone = value;
+        fillSummary();
+        showStep("recap");
+        updateSubmitState();
+        return;
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-back]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const prevIndex = Math.max(0, currentStepIndex - 1);
+      showStep(steps[prevIndex]);
+    });
+  });
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearError("recap");
+
+    if (!confirmCheckbox?.checked) {
+      showError("recap", "Merci de confirmer ton don avant de continuer.");
+      return;
+    }
+
+    if (submitButton) submitButton.disabled = true;
+    showProcessing();
+
+    try {
+      const response = await fetch("/api/dons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          montant: state.montant,
+          email: state.email,
+          operateur: state.operateur,
+          telephone: state.telephone,
+          confirme: true,
+          website: websiteInput?.value ?? "",
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        showResult({
+          title: "Le paiement n'a pas abouti",
+          text:
+            data?.message ??
+            "Une erreur est survenue lors du traitement de votre demande. Veuillez réessayer ou contacter l'équipe de Jeune Chrétien.",
+          showRetry: true,
+        });
+        return;
+      }
+
+      if (data.configured === false) {
+        showResult({
+          title: "Merci pour ton intention de don",
+          text: data.message,
+          reference: data.reference,
+          showRetry: false,
+        });
+        return;
+      }
+
+      // À ce stade, un vrai prestataire serait configuré — ce chemin
+      // n'est pas encore atteignable tant que isMobileMoneyConfigured()
+      // renvoie false côté serveur.
+      showResult({
+        title: "Paiement en cours de confirmation",
+        text: "Votre paiement est en cours de confirmation. Nous vous informerons dès que son statut sera confirmé.",
+        reference: data.reference,
+        showRetry: false,
+      });
+    } catch {
+      showResult({
+        title: "Une erreur est survenue",
+        text: "Une erreur est survenue lors du traitement de votre demande. Veuillez réessayer ou contacter l'équipe de Jeune Chrétien.",
+        showRetry: true,
+      });
+    } finally {
+      if (submitButton) submitButton.disabled = !confirmCheckbox?.checked;
+    }
+  });
+
+  resultRetry?.addEventListener("click", () => {
+    showStep("recap");
+  });
+
+  // --- Ouverture / fermeture (focus trap, Échap — même principe que
+  // TuPeuxEnParlerModal.astro) ---------------------------------------------
+  function getFocusable() {
+    if (!modal) return [];
+    return Array.from(
+      modal.querySelectorAll(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter((el) => el.offsetParent !== null);
+  }
+
+  function onKeydown(event) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = getFocusable();
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  function resetModal() {
+    state = { montant: null, email: "", operateur: null, telephone: "" };
+    form?.reset();
+    updateSelectedAmountUI(-1);
+    operatorButtons.forEach((b) => b.setAttribute("aria-pressed", "false"));
+    if (submitButton) submitButton.disabled = true;
+    ["montant", "email", "operateur", "telephone", "recap"].forEach(clearError);
+    showStep("montant");
+  }
+
+  function open() {
+    if (!overlay || !modal) return;
+    lastFocusedElement = document.activeElement;
+    resetModal();
+    overlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => overlay.classList.add("is-open"));
+    document.addEventListener("keydown", onKeydown);
+    window.setTimeout(() => modal.focus(), 50);
+  }
+
+  function close() {
+    if (!overlay) return;
+    overlay.classList.remove("is-open");
+    document.removeEventListener("keydown", onKeydown);
+    document.body.style.overflow = "";
+    window.setTimeout(() => {
+      overlay.hidden = true;
+      resetModal();
+    }, 220);
+    lastFocusedElement?.focus();
+  }
+
+  window.openDonModal = open;
+
+  document.addEventListener("click", (event) => {
+    const el = event.target?.closest?.("[data-don-open]");
+    if (!el) return;
+    event.preventDefault();
+    open();
+  });
+
+  closeButton?.addEventListener("click", close);
+  resultClose?.addEventListener("click", close);
+  overlay?.addEventListener("click", (event) => {
+    if (event.target === overlay) close();
+  });
+</script>

@@ -136,3 +136,56 @@ create trigger candidatures_set_updated_at
 -- table contient des données plus sensibles (coordonnées, parcours
 -- chrétien) que "messages" : à ne jamais exposer via une policy anon.
 alter table public.candidatures enable row level security;
+
+-- Schéma pour la fonctionnalité "Soutenez-nous" (dons Mobile Money — voir
+-- /soutenez-nous, /api/dons et /admin/dons). Réutilise le même projet
+-- Supabase que les tables ci-dessus, dans une table distincte.
+--
+-- IMPORTANT : aucun prestataire de paiement Mobile Money n'est configuré
+-- sur ce projet pour l'instant (voir src/lib/dons-config.ts). Tant que ce
+-- sera le cas, chaque ligne de cette table représente une INTENTION de don
+-- (montant, contact, opérateur souhaité) que l'équipe peut utiliser pour
+-- recontacter le donateur manuellement — jamais un paiement réellement
+-- effectué. Le statut par défaut 'en_attente_configuration' reflète
+-- précisément cela. Les statuts 'initie'/'en_attente'/'reussi'/'echoue'
+-- sont prévus pour le jour où un prestataire réel sera branché.
+
+do $$ begin
+  create type don_statut as enum (
+    'en_attente_configuration',
+    'initie',
+    'en_attente',
+    'reussi',
+    'echoue'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+create table if not exists public.dons (
+  id uuid primary key default gen_random_uuid(),
+  reference text not null unique,
+  montant integer not null,
+  devise text not null default 'XOF',
+  email text not null,
+  operateur text not null,
+  telephone text not null,
+  statut don_statut not null default 'en_attente_configuration',
+  -- Référence renvoyée par le prestataire une fois une intégration réelle
+  -- branchée — toujours nulle tant que don_statut reste à sa valeur par
+  -- défaut.
+  reference_prestataire text,
+  notes_internes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists dons_statut_idx on public.dons (statut);
+create index if not exists dons_created_at_idx on public.dons (created_at desc);
+
+drop trigger if exists dons_set_updated_at on public.dons;
+create trigger dons_set_updated_at
+  before update on public.dons
+  for each row execute function public.set_updated_at();
+
+alter table public.dons enable row level security;

@@ -1,0 +1,431 @@
+---
+// Corrige l'erreur 404 du bouton "Soutenez-nous" existant (Navbar.astro,
+// href="/soutenez-nous") : ce fichier manquait purement et simplement,
+// c'est la cause exacte du 404 — aucune autre route ne porte ce contenu.
+// Page statique : les boutons de don ouvrent la modale globale DonModal
+// (montée dans Layout.astro), sans rechargement de page.
+export const prerender = true;
+
+import Layout from "../layouts/Layout.astro";
+
+const pourquoi = [
+  {
+    title: "Contribuer à l'affermissement de la jeunesse chrétienne",
+    text: "Votre soutien nous aide à développer des contenus et des ressources qui encouragent les jeunes à approfondir leur foi et à mieux vivre leur engagement chrétien au quotidien.",
+    path: '<path d="M12 21v-8"/><path d="M12 13C8 13 5 10 5 6c4 0 7 3 7 7z"/><path d="M12 13c4 0 7-3 7-7-4 0-7 3-7 7z"/>',
+  },
+  {
+    title: "Favoriser le développement des jeunes",
+    text: "En soutenant nos projets, vous contribuez à la mise en place d'initiatives qui abordent les dimensions spirituelle, personnelle et socioprofessionnelle de la vie des jeunes chrétiens.",
+    path: '<path d="M3 20h18"/><path d="M6 20V10M12 20V4M18 20v-7"/>',
+  },
+  {
+    title: "Permettre le développement de nouvelles initiatives",
+    text: "Les ressources mobilisées peuvent contribuer à la conception de nouveaux contenus, à l'organisation d'activités et de formations, au développement de projets et à l'amélioration des moyens nécessaires à notre mission.",
+    path: '<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.9 1 .9 1.6v.5h5.2v-.5c0-.6.4-1.2.9-1.6A6 6 0 0 0 12 3z"/>',
+  },
+  {
+    title: "Donner plus de portée à une vision",
+    text: "Chaque soutien participe à la construction d'une initiative qui souhaite voir émerger une génération de jeunes chrétiens enracinés dans la foi, conscients de leur potentiel, préparés à leur avenir et engagés dans leur environnement.",
+    path: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+  },
+] as const;
+
+const comment = [
+  {
+    title: "Apporter un soutien financier",
+    text: "Vous pouvez contribuer financièrement au développement de nos activités et de nos projets. Votre contribution, quelle que soit son importance, peut participer à la mobilisation des ressources nécessaires à la réalisation de notre mission.",
+    text2: "Vous pouvez effectuer un soutien ponctuel ou, selon les modalités proposées par l'association, envisager une contribution régulière.",
+    path: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M9.5 9.25c0-1.1 1.1-1.75 2.5-1.75s2.5.75 2.5 1.75-1 1.5-2.5 1.75-2.5.65-2.5 1.75 1.1 1.75 2.5 1.75 2.5-.65 2.5-1.75"/>',
+    buttonLabel: "Faire un don",
+    buttonAttrs: { "data-don-open": "" },
+  },
+  {
+    title: "Soutenir un projet particulier",
+    text: "Vous souhaitez contribuer à une initiative précise ? Vous pouvez manifester votre intérêt pour un projet et échanger avec notre équipe sur les possibilités de soutien.",
+    text2: "Cela permet de rapprocher votre contribution des besoins concrets de l'association.",
+    path: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>',
+    buttonLabel: "Découvrir nos projets",
+    href: "/ce-que-nous-faisons",
+  },
+  {
+    title: "Établir un partenariat",
+    text: "Vous représentez une entreprise, une association, une église, une fondation ou une autre organisation ? Nous sommes ouverts aux collaborations compatibles avec notre identité chrétienne, notre mission et nos valeurs.",
+    text2: "Ensemble, nous pouvons étudier des possibilités de partenariat et identifier les domaines dans lesquels nos actions peuvent se compléter.",
+    path: '<circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/>',
+    buttonLabel: "Proposer un partenariat",
+    href: "mailto:contact@jeunechretien.org",
+  },
+  {
+    title: "Devenir un relais de notre mission",
+    text: "Vous pouvez également contribuer en faisant connaître Jeune Chrétien autour de vous : suivez nos contenus, partagez nos productions, relayez nos initiatives et invitez d'autres personnes à découvrir notre travail.",
+    text2: "Votre engagement peut aider nos ressources à atteindre davantage de jeunes.",
+    path: '<path d="M3 10v4h3l9 5V5L6 10H3z"/><path d="M17 9a3.5 3.5 0 0 1 0 6"/>',
+    buttonLabel: "Découvrir nos contenus",
+    href: "/blog",
+  },
+] as const;
+
+const usages = [
+  "la conception et à la production de contenus ;",
+  "la création de ressources éducatives et d'accompagnement ;",
+  "la réalisation de projets et d'initiatives en faveur de la jeunesse chrétienne ;",
+  "l'organisation d'activités, de formations et de rencontres ;",
+  "le développement et l'amélioration de nos supports numériques ;",
+  "la mobilisation des moyens humains, techniques et matériels nécessaires à nos actions.",
+] as const;
+---
+
+<Layout
+  title="Soutenez Jeune Chrétien | Contribuez à notre mission"
+  description="Soutenez Jeune Chrétien par un don, un partenariat ou le relais de nos initiatives en faveur de la jeunesse chrétienne."
+>
+  <main>
+    <!-- ============================================================ -->
+    <!-- Section 1 — Introduction -->
+    <!-- ============================================================ -->
+    <section class="hero-section px-4 py-20 sm:px-6 lg:py-28">
+      <div class="container-content">
+        <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+          <p class="kicker">Soutenez-nous</p>
+          <h1 class="hero-title w-full">
+            Ensemble, donnons plus de portée à la mission de Jeune Chrétien.
+          </h1>
+          <div class="flex w-full flex-col gap-4 text-ink/70">
+            <p>
+              Faire grandir la jeunesse chrétienne demande des idées, des
+              compétences, de l'engagement, mais aussi des ressources.
+            </p>
+            <p>
+              À travers ses contenus, ses ressources, ses initiatives et ses
+              projets, Jeune Chrétien œuvre pour aider les jeunes chrétiens
+              à grandir dans leur foi, à développer leur potentiel, à
+              préparer leur avenir et à prendre leur place dans la société.
+            </p>
+            <p>
+              Pour poursuivre cette mission et développer de nouvelles
+              initiatives, nous avons besoin de personnes qui croient en
+              cette vision et souhaitent contribuer à sa réalisation.
+            </p>
+            <p class="font-medium text-ink">Votre soutien peut nous aider à aller plus loin.</p>
+            <p>
+              Que vous soyez un particulier, une entreprise, une
+              organisation ou un partenaire potentiel, vous pouvez prendre
+              part à cette mission selon vos possibilités et les moyens
+              dont vous disposez.
+            </p>
+          </div>
+          <button type="button" class="btn-primary mt-2" data-don-open>
+            Soutenir Jeune Chrétien
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 2 — Pourquoi soutenir Jeune Chrétien ? -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <p class="kicker">Pourquoi soutenir Jeune Chrétien ?</p>
+        <h2 class="w-full">Un soutien qui fait avancer une mission.</h2>
+      </div>
+
+      <div class="cards-grid reveal-group mt-14 lg:mt-16">
+        {
+          pourquoi.map((item) => (
+            <div class="info-card reveal-item">
+              <svg
+                class="info-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                set:html={item.path}
+              />
+              <h3>{item.title}</h3>
+              <p class="text-ink/70">{item.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 3 — Comment pouvez-vous nous soutenir ? -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <p class="kicker">Formes de contribution</p>
+        <h2 class="w-full">Comment pouvez-vous nous soutenir ?</h2>
+        <p class="text-ink/70">Il existe plusieurs façons de contribuer à la mission de Jeune Chrétien.</p>
+      </div>
+
+      <div class="cards-grid reveal-group mt-14 lg:mt-16">
+        {
+          comment.map((item) => (
+            <div class="info-card reveal-item">
+              <svg
+                class="info-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                set:html={item.path}
+              />
+              <h3>{item.title}</h3>
+              <p class="text-ink/70">{item.text}</p>
+              <p class="text-ink/70">{item.text2}</p>
+              {"buttonAttrs" in item ? (
+                <button type="button" class="btn-card-action" {...item.buttonAttrs}>
+                  {item.buttonLabel}
+                </button>
+              ) : (
+                <a href={item.href} class="btn-card-action">
+                  {item.buttonLabel}
+                </a>
+              )}
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 4 — À quoi votre soutien peut-il servir ? -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col gap-6">
+        <p class="kicker text-center">Utilisation des ressources</p>
+        <h2 class="w-full text-center">À quoi votre soutien peut-il servir ?</h2>
+        <p class="text-ink/70">
+          Les contributions mobilisées ont vocation à soutenir les
+          activités et les projets de Jeune Chrétien, conformément à son
+          objet et aux règles de gestion de l'association. Elles peuvent
+          notamment contribuer à :
+        </p>
+        <ul class="usages-list">
+          {usages.map((usage) => <li class="reveal-item">{usage}</li>)}
+        </ul>
+        <p class="text-ink/70">
+          L'affectation d'un soutien à un projet particulier pourra être
+          précisée lors des échanges avec l'association, selon les
+          modalités convenues.
+        </p>
+        <p class="text-ink/70">
+          Nous voulons que les ressources mobilisées contribuent
+          effectivement à notre mission et soient gérées avec
+          responsabilité.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 5 — Un engagement fondé sur la confiance -->
+    <!-- ============================================================ -->
+    <section class="trust-section px-4 py-20 sm:px-6 lg:py-28">
+      <div class="container-content">
+        <div class="reveal-group mx-auto flex max-w-2xl flex-col gap-6 text-center">
+          <p class="kicker">Confiance et responsabilité</p>
+          <h2 class="w-full">Un engagement fondé sur la confiance.</h2>
+          <div class="flex flex-col gap-4 text-ink/70">
+            <p>Soutenir une association, c'est aussi lui accorder sa confiance.</p>
+            <p>
+              À Jeune Chrétien, nous entendons gérer les ressources
+              mobilisées dans le respect de notre objet, de nos textes et
+              des principes de transparence et de responsabilité.
+            </p>
+            <p>
+              Les ressources de l'association sont destinées à la
+              réalisation de sa mission et ne peuvent être distribuées aux
+              membres à titre de bénéfice.
+            </p>
+            <p>
+              Nous nous engageons à veiller à leur utilisation appropriée
+              et à rendre compte de notre gestion conformément aux règles
+              qui régissent l'association.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 6 — Appel au contact -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <h2 class="w-full">Vous souhaitez soutenir Jeune Chrétien ?</h2>
+        <p class="text-ink/70">
+          Nous serions heureux d'échanger avec vous sur les possibilités de
+          contribution adaptées à vos moyens et à vos intentions.
+        </p>
+        <p class="text-ink/70">
+          Que vous souhaitiez faire un don, soutenir un projet précis ou
+          envisager un partenariat, prenez contact avec notre équipe.
+        </p>
+        <p class="font-medium text-ink">Chaque contribution peut aider à faire avancer une vision.</p>
+        <a href="mailto:contact@jeunechretien.org" class="btn-secondary">Nous contacter</a>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 7 — Conclusion -->
+    <!-- ============================================================ -->
+    <section class="conclusion-section px-4 py-20 sm:px-6 lg:py-28">
+      <div class="container-content">
+        <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+          <h2 class="w-full">Grandir dans la foi. Se développer. Servir.</h2>
+          <p class="text-ink/70">
+            Nous croyons en une jeunesse chrétienne qui grandit dans sa
+            foi, développe son potentiel et s'engage dans son
+            environnement.
+          </p>
+          <p class="text-ink/70">
+            Avec votre soutien, nous pouvons continuer à concevoir des
+            ressources pertinentes, à développer des initiatives porteuses
+            de sens et à accompagner les jeunes chrétiens dans leur
+            parcours.
+          </p>
+          <p class="text-ink/70">
+            Merci de croire en cette mission et de contribuer, à votre
+            manière, à sa réalisation.
+          </p>
+          <button type="button" class="btn-primary mt-2" data-don-open>
+            Soutenir Jeune Chrétien
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .hero-section {
+    background-color: var(--color-surface-alt);
+  }
+  .hero-title {
+    font-size: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);
+    line-height: 1.15;
+  }
+
+  .trust-section {
+    background-color: var(--color-surface-alt);
+  }
+
+  .conclusion-section {
+    background-color: var(--color-surface-alt);
+  }
+
+  /* --- Boutons (identiques au reste du site) ------------------------- */
+  .btn-primary,
+  .btn-secondary,
+  .btn-card-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--color-accent);
+    cursor: pointer;
+    transition:
+      filter 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site),
+      outline-color 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+  }
+  .btn-primary:hover {
+    filter: brightness(0.88);
+  }
+  .btn-primary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+  .btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+
+  .btn-card-action {
+    margin-top: 0.5rem;
+    padding-inline: 1.25rem;
+    padding-block: 0.625rem;
+    background-color: transparent;
+    color: var(--color-accent);
+    font-size: 0.9375rem;
+    align-self: flex-start;
+  }
+  .btn-card-action:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+
+  /* --- Cartes (sections 2 et 3) ---------------------------------------- */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media (min-width: 40rem) {
+    .cards-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .info-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .info-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-bottom: 0.25rem;
+    color: var(--color-accent);
+  }
+  .info-card h3 {
+    font-size: 1.0625rem;
+  }
+
+  /* --- Section 4 : liste d'usages --------------------------------------- */
+  .usages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+    color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  }
+</style>

@@ -5,6 +5,7 @@ import "../styles/global.css";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import TuPeuxEnParlerModal from "../components/TuPeuxEnParlerModal.astro";
+import DonModal from "../components/DonModal.astro";
 
 interface Props {
   title: string;
@@ -42,6 +43,7 @@ const { title, description } = Astro.props;
     <slot />
     <Footer />
     <TuPeuxEnParlerModal />
+    <DonModal />
     <script>
       // Apparition au scroll pour tout groupe ".reveal-group" ou élément
       // ".reveal-item" (voir global.css). Un seul observateur partagé par
