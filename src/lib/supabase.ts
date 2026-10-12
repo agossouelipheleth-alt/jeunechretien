@@ -6,6 +6,12 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 export type MessageCategory = "question" | "preoccupation" | "priere" | "autre";
 export type MessageStatus = "nouveau" | "en_cours" | "traite" | "archive";
 
+export type CandidatureStatut = "a_examiner" | "en_cours" | "admis" | "refuse";
+export type CandidatureDisponibilite =
+  | "quelques_heures_semaine"
+  | "quelques_heures_mois"
+  | "selon_besoins";
+
 export interface ParleNousMessage {
   id: string;
   category: MessageCategory;
@@ -15,6 +21,35 @@ export interface ParleNousMessage {
   email: string | null;
   status: MessageStatus;
   is_priority: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Candidature {
+  id: string;
+  nom: string;
+  prenoms: string;
+  date_naissance: string;
+  ville: string;
+  pays: string;
+  telephone: string;
+  email: string;
+  profession_de_foi: boolean;
+  eglise_nom: string;
+  eglise_ville: string;
+  participe_eglise: boolean;
+  competences: string[];
+  experience: string;
+  portfolio_url: string | null;
+  motivation: string;
+  contribution: string;
+  disponibilite: CandidatureDisponibilite;
+  a_accepte_statuts: boolean;
+  a_accepte_reglement: boolean;
+  certifie_exactitude: boolean;
+  a_accepte_confidentialite: boolean;
+  statut: CandidatureStatut;
+  notes_internes: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -47,6 +82,39 @@ interface Database {
         }>;
         Relationships: [];
       };
+      candidatures: {
+        Row: Candidature;
+        Insert: {
+          nom: string;
+          prenoms: string;
+          date_naissance: string;
+          ville: string;
+          pays: string;
+          telephone: string;
+          email: string;
+          profession_de_foi: boolean;
+          eglise_nom: string;
+          eglise_ville: string;
+          participe_eglise: boolean;
+          competences: string[];
+          experience: string;
+          portfolio_url?: string | null;
+          motivation: string;
+          contribution: string;
+          disponibilite: CandidatureDisponibilite;
+          a_accepte_statuts: boolean;
+          a_accepte_reglement: boolean;
+          certifie_exactitude: boolean;
+          a_accepte_confidentialite: boolean;
+          statut?: CandidatureStatut;
+          notes_internes?: string | null;
+        };
+        Update: Partial<{
+          statut: CandidatureStatut;
+          notes_internes: string | null;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -57,6 +125,8 @@ interface Database {
 
 export type MessageInsertPayload = Database["public"]["Tables"]["messages"]["Insert"];
 export type MessageUpdatePayload = Database["public"]["Tables"]["messages"]["Update"];
+export type CandidatureInsertPayload = Database["public"]["Tables"]["candidatures"]["Insert"];
+export type CandidatureUpdatePayload = Database["public"]["Tables"]["candidatures"]["Update"];
 
 let cachedClient: SupabaseClient<Database> | null = null;
 
@@ -103,4 +173,20 @@ export async function updateMessage(
 
 export async function deleteMessage(client: SupabaseClient<Database>, id: string) {
   return client.from("messages").delete().eq("id", id);
+}
+
+export async function insertCandidature(
+  client: SupabaseClient<Database>,
+  payload: CandidatureInsertPayload
+) {
+  const result = await client.from("candidatures").insert(payload as never).select("id").single();
+  return result as { data: { id: string } | null; error: { message: string } | null };
+}
+
+export async function updateCandidature(
+  client: SupabaseClient<Database>,
+  id: string,
+  payload: CandidatureUpdatePayload
+) {
+  return client.from("candidatures").update(payload as never).eq("id", id);
 }

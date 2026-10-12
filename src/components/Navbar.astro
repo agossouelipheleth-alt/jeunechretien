@@ -7,6 +7,7 @@ const navLinks = [
   { href: "/qui-sommes-nous", label: "Qui sommes-nous ?" },
   { href: "/ce-que-nous-faisons", label: "Ce que nous faisons" },
   { href: "/blog", label: "Notre blog" },
+  { href: "/rejoignez-nous", label: "Rejoignez-nous" },
 ] as const;
 
 const currentPath = Astro.url.pathname;
@@ -278,6 +279,12 @@ const isActive = (href: string) =>
   }
   .mobile-menu.is-open li:nth-child(4) .mobile-nav-link {
     transition-delay: 120ms;
+  }
+  .mobile-menu.is-open li:nth-child(5) .mobile-nav-link {
+    transition-delay: 160ms;
+  }
+  .mobile-menu.is-open li:nth-child(6) .mobile-nav-link {
+    transition-delay: 200ms;
   }
   .mobile-nav-link:hover,
   .mobile-nav-link:focus-visible,

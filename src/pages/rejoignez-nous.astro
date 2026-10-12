@@ -1,0 +1,1332 @@
+---
+// Page statique : comme /parle-nous, la seule partie dynamique (l'envoi de
+// la candidature) passe par un fetch client-side vers /api/rejoignez-nous.
+export const prerender = true;
+
+import Layout from "../layouts/Layout.astro";
+
+// Domaines de compétence — statuts art. 9 / règlement intérieur art. 6.
+// Réutilisés à la fois pour la grille d'affichage (section 3) et les cases
+// à cocher du formulaire (partie C) : une seule source pour les deux.
+const skills = [
+  {
+    key: "redaction-seo",
+    label: "Rédaction web et référencement naturel (SEO)",
+    path: '<path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 17h4"/>',
+  },
+  {
+    key: "journalisme",
+    label: "Journalisme",
+    path: '<path d="M4 4h12v14a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2V4z"/><path d="M16 8h4v10a2 2 0 0 1-2 2"/><path d="M8 8h5M8 11h5M8 14h3"/>',
+  },
+  {
+    key: "community-management",
+    label: "Community management",
+    path: '<path d="M4 5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M19 9h1a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1v2l-3-2"/>',
+  },
+  {
+    key: "creation-contenus",
+    label: "Création de contenus",
+    path: '<path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/>',
+  },
+  {
+    key: "conception-graphique",
+    label: "Conception graphique",
+    path: '<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2 0-.6-.3-1-.6-1.4-.3-.4-.4-.8-.1-1.2.3-.4.8-.4 1.3-.4H17a4 4 0 0 0 4-4c0-5-4-9-9-9z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/>',
+  },
+  {
+    key: "montage-video",
+    label: "Montage vidéo",
+    path: '<path d="M3 8l2-4h3l-2 4z"/><path d="M8 8l2-4h3l-2 4z"/><path d="M13 8l2-4h3l-2 4z"/><rect x="3" y="8" width="18" height="12" rx="1"/>',
+  },
+  {
+    key: "photographie",
+    label: "Photographie",
+    path: '<path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
+  },
+  {
+    key: "motion-design",
+    label: "Motion design",
+    path: '<path d="M5 19l9-9"/><path d="M13 5l1.5 1.5L13 8l-1.5-1.5L13 5z"/><path d="M19 10l1 1-1 1-1-1 1-1z"/><path d="M16 3l.8.8-.8.8-.8-.8L16 3z"/>',
+  },
+  {
+    key: "voix-off",
+    label: "Voix-off",
+    path: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3M9 21h6"/>',
+  },
+  {
+    key: "evenementiel",
+    label: "Événementiel",
+    path: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/>',
+  },
+  {
+    key: "animation-scene",
+    label: "Animation de scène et maîtrise de cérémonie",
+    path: '<path d="M3 10v4h3l10 5V5L6 10H3z"/><path d="M8 19l-1 3"/>',
+  },
+  {
+    key: "autre",
+    label: "Tout domaine connexe utile à la mission de l'association",
+    path: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  },
+] as const;
+
+const benefits = [
+  {
+    title: "Mettre ses compétences au service d'une mission",
+    text: "Participer à la création de contenus, au développement de ressources et à la réalisation de projets.",
+  },
+  {
+    title: "Contribuer à un projet porteur de sens",
+    text: "Prendre part à une initiative en faveur de l'affermissement et du développement de la jeunesse chrétienne.",
+  },
+  {
+    title: "Grandir en servant",
+    text: "Mettre ses compétences en pratique, apprendre et développer son expérience.",
+  },
+  {
+    title: "Construire une œuvre collective",
+    text: "Collaborer avec d'autres personnes engagées dans la réalisation de la mission de Jeune Chrétien.",
+  },
+] as const;
+
+const conditions = [
+  "Être une personne physique majeure.",
+  "Être chrétien(ne) converti(e) et professer sa foi en Jésus-Christ comme Seigneur et Sauveur.",
+  "Être membre d'une Église locale et participer à sa vie.",
+  "Adhérer à l'objet, à la mission, aux valeurs et aux principes de Jeune Chrétien.",
+  "Accepter les statuts et le règlement intérieur et s'engager à les respecter.",
+  "Présenter une demande d'adhésion selon la procédure définie par l'association.",
+  "S'acquitter du droit d'adhésion et de la cotisation mensuelle fixés par l'Assemblée générale.",
+  "Disposer d'une compétence dans au moins un domaine pertinent mentionné dans les statuts.",
+  "Adopter une conduite compatible avec les valeurs chrétiennes, l'éthique et l'image de l'association.",
+] as const;
+
+const disponibiliteOptions = [
+  { value: "quelques_heures_semaine", label: "Quelques heures par semaine" },
+  { value: "quelques_heures_mois", label: "Quelques heures par mois" },
+  { value: "selon_besoins", label: "Selon les projets et les besoins" },
+] as const;
+---
+
+<Layout
+  title="Rejoindre Jeune Chrétien | Devenir membre actif"
+  description="Vous partagez notre foi et souhaitez mettre vos compétences au service de la jeunesse chrétienne ? Découvrez comment devenir membre actif de Jeune Chrétien et candidatez."
+>
+  <main>
+    <!-- ============================================================ -->
+    <!-- Section 1 — Hero -->
+    <!-- ============================================================ -->
+    <section class="hero-section px-4 py-20 sm:px-6 lg:py-28">
+      <div class="container-content">
+        <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+          <p class="kicker">Rejoignez-nous</p>
+          <h1 class="hero-title w-full">
+            Et si vous contribuiez à faire grandir la jeunesse chrétienne ?
+          </h1>
+          <div class="flex w-full flex-col gap-4 text-ink/70">
+            <p>
+              Derrière chaque contenu, chaque ressource et chaque initiative
+              de Jeune Chrétien, il y a des personnes engagées qui mettent
+              leurs compétences au service d'une vision.
+            </p>
+            <p>
+              Nous recherchons des femmes et des hommes qui partagent notre
+              foi, adhèrent à notre mission et souhaitent contribuer
+              activement à son accomplissement.
+            </p>
+            <p>
+              Rejoindre Jeune Chrétien, c'est choisir de mettre ses talents
+              au service d'une génération de jeunes chrétiens enracinés dans
+              la foi, conscients de leur potentiel, préparés à leur avenir et
+              engagés dans leur environnement.
+            </p>
+          </div>
+          <a href="#candidature" class="btn-primary mt-2">Candidater pour devenir membre</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 2 — Pourquoi devenir membre ? -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <p class="kicker">Pourquoi devenir membre ?</p>
+        <h2 class="w-full">Un engagement, pas une simple inscription.</h2>
+      </div>
+
+      <div class="benefits-grid reveal-group mt-14 lg:mt-16">
+        {
+          benefits.map((benefit) => (
+            <div class="benefit-card reveal-item">
+              <h3>{benefit.title}</h3>
+              <p class="text-ink/70">{benefit.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 3 — Les compétences recherchées -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <p class="kicker">Compétences recherchées</p>
+        <h2 class="w-full">Des talents variés, une même mission.</h2>
+        <p class="text-ink/70">
+          Pour candidater, il suffit de disposer d'une compétence dans au
+          moins l'un des domaines suivants.
+        </p>
+      </div>
+
+      <ul class="skills-grid reveal-group mt-14 lg:mt-16">
+        {
+          skills.map((skill) => (
+            <li class="skill-card reveal-item">
+              <svg
+                class="skill-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                set:html={skill.path}
+              />
+              <span>{skill.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 4 — Conditions pour devenir membre actif -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <p class="kicker">Conditions d'admission</p>
+        <h2 class="w-full">Pour être admis(e) comme membre actif.</h2>
+      </div>
+
+      <ul class="conditions-list reveal-group mx-auto mt-12 flex max-w-2xl flex-col gap-3 lg:mt-14">
+        {
+          conditions.map((condition) => (
+            <li class="condition-item reveal-item">
+              <svg
+                class="condition-check"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+              <span>{condition}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="conditions-note reveal-item mx-auto mt-10 max-w-2xl">
+        L'adhésion à Jeune Chrétien est libre et volontaire, pour toute
+        personne remplissant les conditions prévues par les statuts et le
+        règlement intérieur de l'association.
+      </p>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 5 — Comment devenir membre ? -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <p class="kicker">Comment devenir membre ?</p>
+        <h2 class="w-full">Le parcours de candidature, en quatre étapes.</h2>
+      </div>
+
+      <ol class="steps-list reveal-group mx-auto mt-14 flex max-w-2xl flex-col gap-10 lg:mt-16">
+        <li class="step-item reveal-item">
+          <span class="step-number">1</span>
+          <div>
+            <h3>Vérifiez votre éligibilité</h3>
+            <p class="text-ink/70">
+              Lisez les conditions d'admission ci-dessus et assurez-vous de
+              pouvoir y répondre.
+            </p>
+          </div>
+        </li>
+        <li class="step-item reveal-item">
+          <span class="step-number">2</span>
+          <div>
+            <h3>Consultez les textes officiels</h3>
+            <p class="text-ink/70">
+              Avant de candidater, prenez connaissance des statuts et du
+              règlement intérieur de Jeune Chrétien.
+            </p>
+            <div class="step-docs">
+              <a href="/documents/statuts-jeune-chretien.pdf" target="_blank" rel="noopener noreferrer">
+                Consulter les statuts de Jeune Chrétien ↗
+              </a>
+              <a
+                href="/documents/reglement-interieur-jeune-chretien.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Consulter le règlement intérieur ↗
+              </a>
+            </div>
+          </div>
+        </li>
+        <li class="step-item reveal-item">
+          <span class="step-number">3</span>
+          <div>
+            <h3>Soumettez votre candidature</h3>
+            <p class="text-ink/70">
+              Présentez votre parcours chrétien, vos compétences, vos
+              motivations et votre disponibilité via le{" "}
+              <a href="#candidature">formulaire ci-dessous</a>.
+            </p>
+          </div>
+        </li>
+        <li class="step-item reveal-item">
+          <span class="step-number">4</span>
+          <div>
+            <h3>Attendez l'examen de votre candidature</h3>
+            <p class="text-ink/70">
+              Conformément à l'article 7 du règlement intérieur, le Bureau
+              Exécutif examine la demande et statue sur l'admission. Un
+              entretien peut être sollicité. La décision vous est
+              communiquée dans un délai raisonnable. L'envoi du formulaire
+              ne vaut pas admission automatique.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 6 — Formulaire de candidature -->
+    <!-- ============================================================ -->
+    <section id="candidature" class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div id="candidature-flow">
+        <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+          <p class="kicker">Formulaire de candidature</p>
+          <h2 class="w-full">Présentez votre candidature.</h2>
+          <p class="text-ink/70">
+            Tous les champs marqués d'un astérisque (*) sont obligatoires.
+          </p>
+        </div>
+
+        <form id="candidature-form" class="candidature-form mx-auto mt-14 flex max-w-2xl flex-col gap-14 lg:mt-16" novalidate>
+          {/* Piège anti-bot — même principe que /parle-nous. */}
+          <div class="honeypot" aria-hidden="true">
+            <label for="website">Laisser ce champ vide</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <p id="form-top-error" class="form-error" role="alert" hidden></p>
+
+          <!-- Partie A — Informations personnelles -->
+          <fieldset class="form-part">
+            <legend class="part-title">A. Informations personnelles</legend>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label" for="nom">Nom *</label>
+                <input type="text" id="nom" name="nom" class="field-input" autocomplete="family-name" required />
+                <p class="field-error" id="error-nom" hidden></p>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="prenoms">Prénoms *</label>
+                <input type="text" id="prenoms" name="prenoms" class="field-input" autocomplete="given-name" required />
+                <p class="field-error" id="error-prenoms" hidden></p>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="dateNaissance">Date de naissance *</label>
+              <input type="date" id="dateNaissance" name="dateNaissance" class="field-input" autocomplete="bday" required />
+              <p class="field-error" id="error-dateNaissance" hidden></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label" for="ville">Ville de résidence *</label>
+                <input type="text" id="ville" name="ville" class="field-input" autocomplete="address-level2" required />
+                <p class="field-error" id="error-ville" hidden></p>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="pays">Pays de résidence *</label>
+                <input type="text" id="pays" name="pays" class="field-input" autocomplete="country-name" required />
+                <p class="field-error" id="error-pays" hidden></p>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label" for="telephone">Téléphone / WhatsApp *</label>
+                <input type="tel" id="telephone" name="telephone" class="field-input" autocomplete="tel" required />
+                <p class="field-error" id="error-telephone" hidden></p>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="email">Adresse e-mail *</label>
+                <input type="email" id="email" name="email" class="field-input" autocomplete="email" required />
+                <p class="field-error" id="error-email" hidden></p>
+              </div>
+            </div>
+
+            <p id="minor-notice" class="eligibility-notice" role="alert" hidden>
+              L'admission comme membre actif de Jeune Chrétien est réservée
+              aux personnes majeures. Tu ne remplis pas ce critère pour le
+              moment – mais tu peux suivre nos contenus et participer aux
+              initiatives ouvertes à tous.
+              <a href="/ce-que-nous-faisons">Découvrir nos initiatives →</a>
+            </p>
+          </fieldset>
+
+          <!-- Partie B — Parcours chrétien -->
+          <fieldset class="form-part">
+            <legend class="part-title">B. Parcours chrétien</legend>
+
+            <div class="field-group">
+              <p class="field-label" id="label-professionDeFoi">
+                Êtes-vous chrétien(ne) converti(e) et professez-vous votre foi en Jésus-Christ comme Seigneur et Sauveur ? *
+              </p>
+              <div class="radio-options" aria-labelledby="label-professionDeFoi">
+                <label class="radio-option">
+                  <input type="radio" name="professionDeFoi" value="oui" required />
+                  <span>Oui</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="professionDeFoi" value="non" />
+                  <span>Non</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label" for="egliseNom">Nom de votre Église locale *</label>
+                <input type="text" id="egliseNom" name="egliseNom" class="field-input" required />
+                <p class="field-error" id="error-egliseNom" hidden></p>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="egliseVille">Ville ou localité de l'Église *</label>
+                <input type="text" id="egliseVille" name="egliseVille" class="field-input" required />
+                <p class="field-error" id="error-egliseVille" hidden></p>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <p class="field-label" id="label-participeEglise">
+                Participez-vous à la vie de votre Église locale ? *
+              </p>
+              <div class="radio-options" aria-labelledby="label-participeEglise">
+                <label class="radio-option">
+                  <input type="radio" name="participeEglise" value="oui" required />
+                  <span>Oui</span>
+                </label>
+                <label class="radio-option">
+                  <input type="radio" name="participeEglise" value="non" />
+                  <span>Non</span>
+                </label>
+              </div>
+            </div>
+
+            <p id="faith-notice" class="eligibility-notice" role="alert" hidden>
+              Selon les critères d'admission de Jeune Chrétien, il n'est pas
+              possible de candidater comme membre actif pour le moment. Tu
+              restes bienvenu(e) pour suivre nos contenus et participer à
+              nos initiatives ouvertes à tous.
+              <a href="/ce-que-nous-faisons">Découvrir nos initiatives →</a>
+            </p>
+          </fieldset>
+
+          <!-- Les parties C, D et E ne sont utiles que si les critères
+               d'âge et de parcours chrétien sont remplis (voir script) —
+               on ne les affiche, et on ne collecte ce qu'elles contiennent,
+               que dans ce cas. -->
+          <div id="eligible-fields" class="flex flex-col gap-14">
+            <!-- Partie C — Compétences et expérience -->
+            <fieldset class="form-part">
+              <legend class="part-title">C. Compétences et expérience</legend>
+
+              <div class="field-group">
+                <p class="field-label" id="label-competences">
+                  Dans quel(s) domaine(s) disposez-vous d'une compétence ? *
+                </p>
+                <div class="checkbox-grid" aria-labelledby="label-competences">
+                  {
+                    skills.map((skill) => (
+                      <label class="checkbox-option">
+                        <input type="checkbox" name="competences" value={skill.key} />
+                        <span>{skill.label}</span>
+                      </label>
+                    ))
+                  }
+                </div>
+                <p class="field-error" id="error-competences" hidden></p>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="experience">
+                  Présentez brièvement votre expérience et vos réalisations. *
+                </label>
+                <textarea id="experience" name="experience" class="field-textarea" rows="5" required></textarea>
+                <p class="field-error" id="error-experience" hidden></p>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="portfolioUrl">
+                  Lien vers votre portfolio ou vos réalisations – facultatif
+                </label>
+                <input type="text" id="portfolioUrl" name="portfolioUrl" class="field-input" placeholder="https://" />
+                <p class="field-hint">
+                  Facultatif : la compétence peut aussi être justifiée par
+                  tout autre moyen approprié (règlement intérieur, art. 7).
+                </p>
+                <p class="field-error" id="error-portfolioUrl" hidden></p>
+              </div>
+            </fieldset>
+
+            <!-- Partie D — Motivation et engagement -->
+            <fieldset class="form-part">
+              <legend class="part-title">D. Motivation et engagement</legend>
+
+              <div class="field-group">
+                <label class="field-label" for="motivation">
+                  Pourquoi souhaitez-vous devenir membre de Jeune Chrétien ? *
+                </label>
+                <textarea id="motivation" name="motivation" class="field-textarea" rows="4" required></textarea>
+                <p class="field-error" id="error-motivation" hidden></p>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="contribution">
+                  Comment pourriez-vous contribuer concrètement à notre mission ? *
+                </label>
+                <textarea id="contribution" name="contribution" class="field-textarea" rows="4" required></textarea>
+                <p class="field-error" id="error-contribution" hidden></p>
+              </div>
+
+              <div class="field-group">
+                <p class="field-label" id="label-disponibilite">Quelle est votre disponibilité ? *</p>
+                <div class="radio-options" aria-labelledby="label-disponibilite">
+                  {
+                    disponibiliteOptions.map((option) => (
+                      <label class="radio-option">
+                        <input type="radio" name="disponibilite" value={option.value} required />
+                        <span>{option.label}</span>
+                      </label>
+                    ))
+                  }
+                </div>
+                <p class="field-error" id="error-disponibilite" hidden></p>
+              </div>
+            </fieldset>
+
+            <!-- Partie E — Lecture des textes et consentements -->
+            <fieldset class="form-part">
+              <legend class="part-title">E. Lecture des textes et consentements</legend>
+
+              <div class="step-docs">
+                <a href="/documents/statuts-jeune-chretien.pdf" target="_blank" rel="noopener noreferrer">
+                  Lire les statuts de Jeune Chrétien ↗
+                </a>
+                <a
+                  href="/documents/reglement-interieur-jeune-chretien.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Lire le règlement intérieur de Jeune Chrétien ↗
+                </a>
+              </div>
+
+              <div class="consents-list">
+                <label class="checkbox-option">
+                  <input type="checkbox" id="aAccepteStatuts" name="aAccepteStatuts" required />
+                  <span>Je confirme avoir lu et accepté les statuts de Jeune Chrétien.</span>
+                </label>
+                <label class="checkbox-option">
+                  <input type="checkbox" id="aAccepteReglement" name="aAccepteReglement" required />
+                  <span>Je confirme avoir lu et accepté le règlement intérieur de Jeune Chrétien.</span>
+                </label>
+                <label class="checkbox-option">
+                  <input type="checkbox" id="certifieExactitude" name="certifieExactitude" required />
+                  <span>
+                    Je certifie l'exactitude des informations fournies et m'engage à respecter les
+                    valeurs et les principes de l'association.
+                  </span>
+                </label>
+                <label class="checkbox-option">
+                  <input type="checkbox" id="aAccepteConfidentialite" name="aAccepteConfidentialite" required />
+                  <span>
+                    J'ai pris connaissance de la{" "}
+                    <a href="/politique-confidentialite" target="_blank" rel="noopener noreferrer">
+                      politique de confidentialité
+                    </a>{" "}
+                    et j'accepte que mes informations soient traitées aux fins de l'examen et du suivi
+                    de ma candidature.
+                  </span>
+                </label>
+              </div>
+              <p class="field-error" id="error-consents" hidden></p>
+            </fieldset>
+
+            <div id="submit-block">
+              <p id="form-error" class="form-error" role="alert" hidden></p>
+              <button type="submit" class="btn-primary" id="submit-button">
+                Envoyer ma candidature
+              </button>
+              <p class="field-hint mt-3">
+                Ta candidature sera transmise au Bureau Exécutif de Jeune
+                Chrétien, qui l'examinera conformément à l'article 7 du
+                règlement intérieur. L'envoi de ce formulaire ne vaut pas
+                admission automatique.
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div id="candidature-confirmation" class="confirmation" hidden tabindex="-1">
+        <div class="mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
+          <h2 class="confirmation-title">Candidature transmise.</h2>
+          <p class="text-ink/70">
+            Ta candidature a bien été transmise à Jeune Chrétien. Merci pour
+            ta volonté de contribuer à notre mission.
+          </p>
+          <p class="text-ink/70">
+            Notre équipe examinera ton dossier et te communiquera sa
+            décision dans un délai raisonnable. L'envoi du formulaire ne
+            vaut pas admission automatique.
+          </p>
+          <p class="confirmation-ref" data-role="confirmation-id"></p>
+          <a href="/" class="btn-primary">Retour à Jeune Chrétien</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 7 — Soutenir autrement -->
+    <!-- ============================================================ -->
+    <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
+      <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <p class="kicker">Autrement</p>
+        <h2 class="w-full">Vous souhaitez soutenir Jeune Chrétien autrement ?</h2>
+        <p class="text-ink/70">
+          Devenir membre actif n'est pas la seule façon de contribuer. Tu
+          peux aussi suivre nos contenus, partager nos productions,
+          participer à nos initiatives ouvertes au public ou simplement
+          découvrir nos projets.
+        </p>
+        <a href="/ce-que-nous-faisons" class="btn-secondary">Découvrir nos initiatives</a>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 8 — Conclusion -->
+    <!-- ============================================================ -->
+    <section class="conclusion-section px-4 py-20 sm:px-6 lg:py-28">
+      <div class="container-content">
+        <div class="reveal-group mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+          <h2 class="w-full">Une vision à construire ensemble.</h2>
+          <p class="text-ink/70">
+            La jeunesse chrétienne mérite des ressources pertinentes, des
+            initiatives porteuses de sens et des personnes prêtes à
+            s'investir pour son développement.
+          </p>
+          <p class="text-ink/70">
+            Si vous partagez cette conviction, possédez des compétences
+            utiles et souhaitez les mettre au service de cette mission, nous
+            vous invitons à présenter votre candidature.
+          </p>
+          <a href="#candidature" class="btn-primary mt-2">Candidater pour devenir membre</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .hero-section {
+    background-color: var(--color-surface-alt);
+  }
+
+  .hero-title {
+    font-size: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);
+    line-height: 1.15;
+  }
+
+  .conclusion-section {
+    background-color: var(--color-surface-alt);
+  }
+
+  /* --- Boutons (identiques au reste du site) --------------------------- */
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--color-accent);
+    cursor: pointer;
+    transition:
+      filter 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site),
+      outline-color 150ms var(--ease-out-site);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+  }
+  .btn-primary:hover {
+    filter: brightness(0.88);
+  }
+  .btn-primary:focus-visible {
+    outline-color: var(--color-accent);
+  }
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+  .btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+
+  /* --- Section 2 : bénéfices -------------------------------------------- */
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media (min-width: 40rem) {
+    .benefits-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  .benefit-card {
+    padding: 1.5rem 1.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .benefit-card h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  /* --- Section 3 : compétences -------------------------------------------- */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+  @media (min-width: 40rem) {
+    .skills-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .skill-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    font-size: 0.875rem;
+  }
+  .skill-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--color-accent);
+  }
+
+  /* --- Section 4 : conditions -------------------------------------------- */
+  .condition-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .condition-check {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    color: var(--color-accent);
+  }
+  .conditions-note {
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius-lg);
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  /* --- Section 5 : étapes -------------------------------------------- */
+  .step-item {
+    display: flex;
+    gap: 1.25rem;
+  }
+  .step-number {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  .step-item h3 {
+    margin-bottom: 0.375rem;
+  }
+  .step-docs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .step-docs a {
+    color: var(--color-accent);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  /* --- Section 6 : formulaire -------------------------------------------- */
+  .form-part {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0;
+    border: none;
+  }
+  .part-title {
+    padding: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.125rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+    width: 100%;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  @media (min-width: 32rem) {
+    .field-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .field-label {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  .field-input,
+  .field-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.6;
+    transition:
+      border-color 150ms var(--ease-out-site),
+      box-shadow 150ms var(--ease-out-site);
+  }
+  .field-textarea {
+    resize: vertical;
+    min-height: 7rem;
+  }
+  .field-input:focus,
+  .field-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+  .field-input[aria-invalid="true"],
+  .field-textarea[aria-invalid="true"] {
+    border-color: #b3261e;
+  }
+
+  .field-hint {
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  }
+
+  .field-error,
+  .form-error {
+    padding: 0;
+    color: #b3261e;
+    font-size: 0.875rem;
+  }
+  :root[data-theme="dark"] .field-error,
+  :root[data-theme="dark"] .form-error {
+    color: #ffb4ab;
+  }
+  .form-error {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, #b3261e 8%, transparent);
+  }
+  :root[data-theme="dark"] .form-error {
+    background-color: color-mix(in srgb, #ffb4ab 12%, transparent);
+  }
+
+  .eligibility-notice {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+  .eligibility-notice a {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: var(--color-accent);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .radio-options,
+  .consents-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .radio-option,
+  .checkbox-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    cursor: pointer;
+    line-height: 1.5;
+  }
+  .radio-option input,
+  .checkbox-option input {
+    flex-shrink: 0;
+    margin-top: 0.1875rem;
+    accent-color: var(--color-accent);
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem 1.5rem;
+  }
+  @media (min-width: 32rem) {
+    .checkbox-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+  }
+
+  /* --- Confirmation (identique à /parle-nous) -------------------------- */
+  .confirmation {
+    padding-block: 2rem;
+    outline: none;
+  }
+  .confirmation:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 8px;
+    border-radius: var(--radius-md);
+  }
+  .confirmation-title {
+    font-size: clamp(1.75rem, 1.3rem + 2vw, 3rem);
+    line-height: 1.15;
+  }
+  .confirmation-ref {
+    font-size: 0.8125rem;
+    color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+  }
+</style>
+
+<script>
+  const flow = document.getElementById("candidature-flow");
+  const confirmation = document.getElementById("candidature-confirmation");
+  const confirmationRef = confirmation?.querySelector<HTMLElement>('[data-role="confirmation-id"]');
+
+  const form = document.getElementById("candidature-form") as HTMLFormElement | null;
+  const eligibleFields = document.getElementById("eligible-fields");
+  const minorNotice = document.getElementById("minor-notice");
+  const faithNotice = document.getElementById("faith-notice");
+  const submitButton = document.getElementById("submit-button") as HTMLButtonElement | null;
+  const formError = document.getElementById("form-error");
+  const websiteInput = document.getElementById("website") as HTMLInputElement | null;
+
+  const dateNaissanceInput = document.getElementById("dateNaissance") as HTMLInputElement | null;
+
+  function todayISO(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+  // Empêche la sélection d'une date de naissance future directement dans
+  // le sélecteur natif, en plus de la validation JS/serveur.
+  if (dateNaissanceInput) dateNaissanceInput.max = todayISO();
+
+  function computeAge(dateStr: string): number | null {
+    const birth = new Date(dateStr);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const hadBirthday =
+      today.getMonth() > birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+    if (!hadBirthday) age -= 1;
+    return age;
+  }
+
+  function showError(errorId: string, message: string) {
+    const el = document.getElementById(errorId);
+    if (!el) return;
+    el.textContent = message;
+    el.hidden = false;
+    const input = document.getElementById(errorId.replace("error-", ""));
+    input?.setAttribute("aria-invalid", "true");
+  }
+  function clearAllErrors() {
+    document.querySelectorAll<HTMLElement>(".field-error").forEach((el) => {
+      el.hidden = true;
+      el.textContent = "";
+    });
+    document.querySelectorAll("[aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+    if (formError) {
+      formError.hidden = true;
+      formError.textContent = "";
+    }
+  }
+
+  // --- Blocage d'éligibilité (âge, profession de foi, vie d'Église) -----
+  // Tant qu'une de ces conditions n'est pas remplie, les parties C/D/E et
+  // le bouton d'envoi restent masqués et leur contenu n'est pas collecté.
+  function updateEligibility(): boolean {
+    const age = dateNaissanceInput?.value ? computeAge(dateNaissanceInput.value) : null;
+    const isMinor = age !== null && age < 18;
+
+    const professionDeFoi = document.querySelector<HTMLInputElement>(
+      'input[name="professionDeFoi"]:checked'
+    )?.value;
+    const participeEglise = document.querySelector<HTMLInputElement>(
+      'input[name="participeEglise"]:checked'
+    )?.value;
+    // Un seul "Non" suffit à bloquer — pas besoin d'attendre que les deux
+    // questions aient reçu une réponse (brief section 6, partie B).
+    const faithFails = professionDeFoi === "non" || participeEglise === "non";
+
+    if (minorNotice) minorNotice.hidden = !isMinor;
+    if (faithNotice) faithNotice.hidden = !faithFails;
+
+    const blocked = isMinor || faithFails;
+    if (eligibleFields) {
+      eligibleFields.hidden = blocked;
+      // On vide les champs masqués : on ne conserve pas de données
+      // inutiles une fois l'inéligibilité détectée.
+      if (blocked) {
+        eligibleFields
+          .querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input, textarea")
+          .forEach((el) => {
+            if (el instanceof HTMLInputElement && (el.type === "checkbox" || el.type === "radio")) {
+              el.checked = false;
+            } else {
+              el.value = "";
+            }
+          });
+      }
+    }
+    return !blocked;
+  }
+
+  dateNaissanceInput?.addEventListener("change", updateEligibility);
+  document
+    .querySelectorAll<HTMLInputElement>('input[name="professionDeFoi"], input[name="participeEglise"]')
+    .forEach((el) => el.addEventListener("change", updateEligibility));
+
+  // --- Validation ---------------------------------------------------------
+  function isPlausibleEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+  function isPlausiblePhone(value: string): boolean {
+    const digitCount = (value.match(/\d/g) ?? []).length;
+    return digitCount >= 8 && /^[0-9+()\-.\s]+$/.test(value);
+  }
+  function isPlausibleUrl(value: string): boolean {
+    try {
+      const url = new URL(value.includes("://") ? value : `https://${value}`);
+      return url.hostname.includes(".");
+    } catch {
+      return false;
+    }
+  }
+  function val(id: string): string {
+    return ((document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null)?.value ?? "").trim();
+  }
+
+  interface ValidationResult {
+    ok: boolean;
+    firstInvalid: HTMLElement | null;
+    payload: Record<string, unknown> | null;
+  }
+
+  function validate(): ValidationResult {
+    clearAllErrors();
+    let firstInvalid: HTMLElement | null = null;
+    const fail = (id: string, errorId: string, message: string) => {
+      showError(errorId, message);
+      if (!firstInvalid) {
+        firstInvalid = document.getElementById(id) ?? document.getElementById(errorId);
+      }
+    };
+
+    // Partie A
+    if (!val("nom")) fail("nom", "error-nom", "Merci d'indiquer ton nom.");
+    if (!val("prenoms")) fail("prenoms", "error-prenoms", "Merci d'indiquer tes prénoms.");
+    const dateNaissance = val("dateNaissance");
+    if (!dateNaissance) {
+      fail("dateNaissance", "error-dateNaissance", "Merci d'indiquer ta date de naissance.");
+    } else {
+      const birth = new Date(dateNaissance);
+      if (Number.isNaN(birth.getTime()) || birth.getTime() > Date.now()) {
+        fail("dateNaissance", "error-dateNaissance", "La date de naissance n'est pas valide.");
+      }
+    }
+    if (!val("ville")) fail("ville", "error-ville", "Merci d'indiquer ta ville de résidence.");
+    if (!val("pays")) fail("pays", "error-pays", "Merci d'indiquer ton pays de résidence.");
+    const telephone = val("telephone");
+    if (!telephone) {
+      fail("telephone", "error-telephone", "Merci d'indiquer un numéro de téléphone.");
+    } else if (!isPlausiblePhone(telephone)) {
+      fail("telephone", "error-telephone", "Ce numéro de téléphone ne semble pas valide.");
+    }
+    const email = val("email");
+    if (!email) {
+      fail("email", "error-email", "Merci d'indiquer une adresse e-mail.");
+    } else if (!isPlausibleEmail(email)) {
+      fail("email", "error-email", "Cette adresse e-mail ne semble pas valide.");
+    }
+
+    // L'éligibilité (âge + partie B) bloque l'envoi — message déjà affiché
+    // par updateEligibility(), on arrête juste la validation/l'envoi ici.
+    const eligible = updateEligibility();
+    if (!eligible) {
+      return {
+        ok: false,
+        firstInvalid: (minorNotice?.hidden === false ? minorNotice : faithNotice) ?? null,
+        payload: null,
+      };
+    }
+
+    if (!val("egliseNom")) fail("egliseNom", "error-egliseNom", "Merci d'indiquer le nom de ton Église locale.");
+    if (!val("egliseVille")) fail("egliseVille", "error-egliseVille", "Merci d'indiquer la ville de ton Église.");
+
+    // Partie C
+    const competences = Array.from(
+      document.querySelectorAll<HTMLInputElement>('input[name="competences"]:checked')
+    ).map((el) => el.value);
+    if (competences.length === 0) {
+      fail("competences", "error-competences", "Sélectionne au moins un domaine de compétence.");
+    }
+    const experience = val("experience");
+    if (!experience) {
+      fail("experience", "error-experience", "Merci de présenter ton expérience.");
+    } else if (experience.length < 20) {
+      fail("experience", "error-experience", "Merci de détailler un peu plus ton expérience.");
+    }
+    const portfolioUrl = val("portfolioUrl");
+    if (portfolioUrl && !isPlausibleUrl(portfolioUrl)) {
+      fail("portfolioUrl", "error-portfolioUrl", "Ce lien ne semble pas valide.");
+    }
+
+    // Partie D
+    const motivation = val("motivation");
+    if (!motivation) {
+      fail("motivation", "error-motivation", "Merci de répondre à cette question.");
+    } else if (motivation.length < 30) {
+      fail("motivation", "error-motivation", "Merci de développer un peu plus ta réponse.");
+    }
+    const contribution = val("contribution");
+    if (!contribution) {
+      fail("contribution", "error-contribution", "Merci de répondre à cette question.");
+    } else if (contribution.length < 30) {
+      fail("contribution", "error-contribution", "Merci de développer un peu plus ta réponse.");
+    }
+    const disponibilite = document.querySelector<HTMLInputElement>('input[name="disponibilite"]:checked')?.value;
+    if (!disponibilite) {
+      fail("disponibilite", "error-disponibilite", "Merci d'indiquer ta disponibilité.");
+    }
+
+    // Partie E
+    const consentIds = ["aAccepteStatuts", "aAccepteReglement", "certifieExactitude", "aAccepteConfidentialite"];
+    const allConsented = consentIds.every(
+      (id) => (document.getElementById(id) as HTMLInputElement | null)?.checked
+    );
+    if (!allConsented) {
+      fail(
+        "aAccepteStatuts",
+        "error-consents",
+        "Merci de cocher les quatre cases de confirmation avant d'envoyer ta candidature."
+      );
+    }
+
+    return {
+      ok: !firstInvalid,
+      firstInvalid,
+      payload: firstInvalid
+        ? null
+        : {
+            nom: val("nom"),
+            prenoms: val("prenoms"),
+            dateNaissance,
+            ville: val("ville"),
+            pays: val("pays"),
+            telephone,
+            email,
+            professionDeFoi:
+              document.querySelector<HTMLInputElement>('input[name="professionDeFoi"]:checked')?.value === "oui",
+            egliseNom: val("egliseNom"),
+            egliseVille: val("egliseVille"),
+            participeEglise:
+              document.querySelector<HTMLInputElement>('input[name="participeEglise"]:checked')?.value === "oui",
+            competences,
+            experience,
+            portfolioUrl,
+            motivation,
+            contribution,
+            disponibilite,
+            aAccepteStatuts: (document.getElementById("aAccepteStatuts") as HTMLInputElement | null)?.checked === true,
+            aAccepteReglement:
+              (document.getElementById("aAccepteReglement") as HTMLInputElement | null)?.checked === true,
+            certifieExactitude:
+              (document.getElementById("certifieExactitude") as HTMLInputElement | null)?.checked === true,
+            aAccepteConfidentialite:
+              (document.getElementById("aAccepteConfidentialite") as HTMLInputElement | null)?.checked === true,
+            website: websiteInput?.value ?? "",
+          },
+    };
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const result = validate();
+    if (!result.ok) {
+      if (formError) {
+        formError.textContent = "Merci de corriger les champs signalés avant d'envoyer ta candidature.";
+        formError.hidden = false;
+      }
+      result.firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+      result.firstInvalid?.focus?.();
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Envoi en cours...";
+    }
+
+    try {
+      const response = await fetch("/api/rejoignez-nous", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(result.payload),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        if (formError) {
+          formError.textContent =
+            data?.message ??
+            "Nous n'avons pas pu transmettre ta candidature. Veuillez réessayer ou contacter l'équipe de Jeune Chrétien.";
+          formError.hidden = false;
+        }
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = "Envoyer ma candidature";
+        }
+        formError?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+
+      if (confirmationRef && data.id) {
+        confirmationRef.textContent = `Référence de ta candidature : ${String(data.id).slice(0, 8)}`;
+      }
+
+      if (flow) flow.hidden = true;
+      if (confirmation) {
+        confirmation.hidden = false;
+        confirmation.focus();
+        confirmation.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } catch {
+      if (formError) {
+        formError.textContent =
+          "Nous n'avons pas pu transmettre ta candidature. Vos informations n'ont pas été confirmées comme reçues. Veuillez réessayer ou contacter l'équipe de Jeune Chrétien.";
+        formError.hidden = false;
+      }
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Envoyer ma candidature";
+      }
+    }
+  });
+</script>

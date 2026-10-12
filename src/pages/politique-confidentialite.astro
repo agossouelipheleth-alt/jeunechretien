@@ -5,7 +5,7 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout
   title="Politique de confidentialité – Jeune Chrétien"
-  description="Comment Jeune Chrétien traite les messages et les informations partagées via « Parle-nous »."
+  description="Comment Jeune Chrétien traite les messages, les candidatures et les informations partagées via le site."
 >
   <main>
     <section class="container-content px-4 py-20 sm:px-6 lg:py-28">
@@ -15,12 +15,15 @@ import Layout from "../layouts/Layout.astro";
           <h1 class="page-title">Politique de confidentialité</h1>
           <p class="text-ink/70">
             Cette page explique comment Jeune Chrétien traite les messages
-            envoyés via « Parle-nous », ainsi que les informations que tu
-            choisis ou non de partager.
+            envoyés via « Parle-nous », les candidatures soumises via
+            « Rejoignez-nous », ainsi que les informations que tu choisis ou
+            non de partager.
           </p>
         </div>
 
         <div class="policy-content flex flex-col gap-8 text-ink/80">
+          <p class="policy-section-label">« Parle-nous »</p>
+
           <div class="flex flex-col gap-2">
             <h2>Ce que nous collectons</h2>
             <p>
@@ -49,7 +52,7 @@ import Layout from "../layouts/Layout.astro";
               Les messages traités peuvent être archivés pour le suivi
               interne de l'accompagnement, ou supprimés à la demande. Si tu
               souhaites qu'un message te concernant soit supprimé, tu peux
-              nous l'écrire – via « Parle-nous » ou à
+              nous l'écrire – via « Parle-nous » ou à{" "}
               <a href="mailto:jeunechretienmedia@gmail.com">jeunechretienmedia@gmail.com</a>.
             </p>
           </div>
@@ -64,6 +67,57 @@ import Layout from "../layouts/Layout.astro";
               équipe pourra t'orienter vers des ressources ou des
               professionnels adaptés. Nous ne pouvons pas garantir un délai
               de réponse ni une solution à chaque message.
+            </p>
+          </div>
+
+          <p class="policy-section-label">« Rejoignez-nous »</p>
+
+          <div class="flex flex-col gap-2">
+            <h2>Ce que nous collectons</h2>
+            <p>
+              Pour examiner une candidature au statut de membre actif, nous
+              collectons les informations demandées par le formulaire de la
+              page <a href="/rejoignez-nous">Rejoignez-nous</a> : tes
+              coordonnées, les éléments relatifs à ton parcours chrétien
+              requis par les statuts et le règlement intérieur de Jeune
+              Chrétien, tes compétences et ton expérience, ainsi que ta
+              motivation et ta disponibilité. Ces informations sont
+              nécessaires à l'examen de ta candidature par le Bureau
+              Exécutif ; aucune n'est collectée au-delà de ce qui est
+              demandé dans le formulaire.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <h2>Qui peut consulter ta candidature</h2>
+            <p>
+              Seules les personnes habilitées du Bureau Exécutif de Jeune
+              Chrétien ont accès aux candidatures reçues via
+              « Rejoignez-nous ». Elles sont stockées de façon sécurisée et
+              ne sont utilisées que pour l'examen de ta candidature et son
+              suivi, conformément à l'article 7 du règlement intérieur –
+              jamais partagées à des tiers ni utilisées à d'autres fins.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <h2>Combien de temps ta candidature est conservée</h2>
+            <p>
+              Ta candidature est conservée le temps de son examen, puis
+              selon l'issue qui lui est donnée, pour le suivi de la vie
+              associative. Si tu souhaites qu'elle soit supprimée, tu peux
+              nous l'écrire à{" "}
+              <a href="mailto:jeunechretienmedia@gmail.com">jeunechretienmedia@gmail.com</a>.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <h2>Ce que l'envoi du formulaire n'est pas</h2>
+            <p>
+              Soumettre ce formulaire ne vaut pas admission automatique.
+              L'admission est prononcée par le Bureau Exécutif, dans le
+              respect des statuts et du règlement intérieur de Jeune
+              Chrétien.
             </p>
           </div>
         </div>
@@ -90,6 +144,19 @@ import Layout from "../layouts/Layout.astro";
   .policy-content h2 {
     font-weight: 600;
     font-size: 1.125rem;
+  }
+
+  .policy-section-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .policy-section-label:not(:first-child) {
+    margin-top: 0.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
   }
 
   .policy-content a {

@@ -54,3 +54,85 @@ create trigger messages_set_updated_at
 -- côté serveur, jamais exposée au client) peut accéder à cette table —
 -- elle contourne RLS par conception. C'est le seul chemin d'accès.
 alter table public.messages enable row level security;
+
+-- Schéma pour la fonctionnalité "Rejoignez-nous" (candidatures au statut
+-- de membre actif — voir /rejoignez-nous, /api/rejoignez-nous et
+-- /admin/candidatures). Réutilise le même projet/client Supabase que
+-- "Parle-nous" ci-dessus, dans une table distincte.
+
+do $$ begin
+  create type candidature_statut as enum ('a_examiner', 'en_cours', 'admis', 'refuse');
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create type candidature_disponibilite as enum (
+    'quelques_heures_semaine',
+    'quelques_heures_mois',
+    'selon_besoins'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+create table if not exists public.candidatures (
+  id uuid primary key default gen_random_uuid(),
+
+  -- Partie A — informations personnelles (statuts art. 9, règl. art. 6 :
+  -- personne physique majeure).
+  nom text not null,
+  prenoms text not null,
+  date_naissance date not null,
+  ville text not null,
+  pays text not null,
+  telephone text not null,
+  email text not null,
+
+  -- Partie B — parcours chrétien (statuts art. 9, règl. art. 6 : conditions
+  -- de conversion, profession de foi et participation à une église locale).
+  profession_de_foi boolean not null,
+  eglise_nom text not null,
+  eglise_ville text not null,
+  participe_eglise boolean not null,
+
+  -- Partie C — compétences et expérience (règl. art. 6 et 7 : au moins un
+  -- domaine de compétence, justifiable par tout moyen approprié).
+  competences text[] not null,
+  experience text not null,
+  portfolio_url text,
+
+  -- Partie D — motivation et engagement.
+  motivation text not null,
+  contribution text not null,
+  disponibilite candidature_disponibilite not null,
+
+  -- Partie E — consentements obligatoires au moment de la soumission
+  -- (conservés comme preuve, indépendamment du texte en vigueur au moment
+  -- d'une lecture ultérieure).
+  a_accepte_statuts boolean not null,
+  a_accepte_reglement boolean not null,
+  certifie_exactitude boolean not null,
+  a_accepte_confidentialite boolean not null,
+
+  -- Suivi interne (règl. art. 7 : examen par le Bureau Exécutif).
+  statut candidature_statut not null default 'a_examiner',
+  notes_internes text,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists candidatures_statut_idx on public.candidatures (statut);
+create index if not exists candidatures_created_at_idx on public.candidatures (created_at desc);
+
+drop trigger if exists candidatures_set_updated_at on public.candidatures;
+create trigger candidatures_set_updated_at
+  before update on public.candidatures
+  for each row execute function public.set_updated_at();
+
+-- Même principe que pour "messages" : RLS activée sans policy publique,
+-- seule la clé service_role (serveur uniquement) peut lire/écrire. Cette
+-- table contient des données plus sensibles (coordonnées, parcours
+-- chrétien) que "messages" : à ne jamais exposer via une policy anon.
+alter table public.candidatures enable row level security;
