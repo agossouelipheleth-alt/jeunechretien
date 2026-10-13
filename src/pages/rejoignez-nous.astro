@@ -93,7 +93,7 @@ const benefits = [
 const conditions = [
   "Être une personne physique majeure.",
   "Être chrétien(ne) converti(e) et professer sa foi en Jésus-Christ comme Seigneur et Sauveur.",
-  "Être membre d'une Église locale et participer à sa vie.",
+  "Être membre d'une église locale et participer à sa vie.",
   "Adhérer à l'objet, à la mission, aux valeurs et aux principes de Jeune Chrétien.",
   "Accepter les statuts et le règlement intérieur et s'engager à les respecter.",
   "Présenter une demande d'adhésion selon la procédure définie par l'association.",
@@ -412,12 +412,12 @@ const disponibiliteOptions = [
 
             <div class="field-row">
               <div class="field-group">
-                <label class="field-label" for="egliseNom">Nom de votre Église locale *</label>
+                <label class="field-label" for="egliseNom">Nom de votre église locale *</label>
                 <input type="text" id="egliseNom" name="egliseNom" class="field-input" required />
                 <p class="field-error" id="error-egliseNom" hidden></p>
               </div>
               <div class="field-group">
-                <label class="field-label" for="egliseVille">Ville ou localité de l'Église *</label>
+                <label class="field-label" for="egliseVille">Ville ou localité de l'église *</label>
                 <input type="text" id="egliseVille" name="egliseVille" class="field-input" required />
                 <p class="field-error" id="error-egliseVille" hidden></p>
               </div>
@@ -425,7 +425,7 @@ const disponibiliteOptions = [
 
             <div class="field-group">
               <p class="field-label" id="label-participeEglise">
-                Participez-vous à la vie de votre Église locale ? *
+                Participez-vous à la vie de votre église locale ? *
               </p>
               <div class="radio-options" aria-labelledby="label-participeEglise">
                 <label class="radio-option">
@@ -1069,7 +1069,7 @@ const disponibiliteOptions = [
     }
   }
 
-  // --- Blocage d'éligibilité (âge, profession de foi, vie d'Église) -----
+  // --- Blocage d'éligibilité (âge, profession de foi, vie d'église) -----
   // Tant qu'une de ces conditions n'est pas remplie, les parties C/D/E et
   // le bouton d'envoi restent masqués et leur contenu n'est pas collecté.
   function updateEligibility(): boolean {
@@ -1188,8 +1188,8 @@ const disponibiliteOptions = [
       };
     }
 
-    if (!val("egliseNom")) fail("egliseNom", "error-egliseNom", "Merci d'indiquer le nom de ton Église locale.");
-    if (!val("egliseVille")) fail("egliseVille", "error-egliseVille", "Merci d'indiquer la ville de ton Église.");
+    if (!val("egliseNom")) fail("egliseNom", "error-egliseNom", "Merci d'indiquer le nom de ton église locale.");
+    if (!val("egliseVille")) fail("egliseVille", "error-egliseVille", "Merci d'indiquer la ville de ton église.");
 
     // Partie C
     const competences = Array.from(
