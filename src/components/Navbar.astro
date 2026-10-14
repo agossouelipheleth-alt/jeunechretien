@@ -169,6 +169,22 @@ const isActive = (href: string) =>
     color: var(--color-on-fill);
   }
 
+  /* Dans le panneau mobile, le fond reste fixé en noir quel que soit le
+     thème (cf. .mobile-menu ci-dessous) : la bordure et le texte doivent
+     donc rester clairs, indépendamment de var(--color-ink) qui devient
+     noir en thème clair et rendrait la bordure invisible. */
+  .mobile-menu .btn-support {
+    border-color: #fff;
+    color: #fff;
+    font-size: 1.125rem;
+    padding-block: 0.75rem;
+  }
+  .mobile-menu .btn-support:hover,
+  .mobile-menu .btn-support:focus-visible {
+    background-color: #fff;
+    color: #070500;
+  }
+
   .nav-link {
     position: relative;
     padding-block: 0.375rem;
