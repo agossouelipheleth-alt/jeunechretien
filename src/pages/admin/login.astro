@@ -7,6 +7,7 @@ import {
   ADMIN_COOKIE_NAME,
   ADMIN_COOKIE_MAX_AGE_SECONDS,
 } from "../../lib/admin-auth";
+import { isRateLimited } from "../../lib/rate-limit";
 
 let error: string | null = null;
 const configured = isAdminAuthConfigured();
@@ -15,21 +16,32 @@ if (Astro.request.method === "POST") {
   if (!configured) {
     error = "L'accès interne n'est pas encore configuré (variables d'environnement manquantes).";
   } else {
-    const formData = await Astro.request.formData();
-    const password = String(formData.get("password") ?? "");
-
-    if (verifyAdminPassword(password)) {
-      Astro.cookies.set(ADMIN_COOKIE_NAME, createSessionToken(), {
-        httpOnly: true,
-        secure: import.meta.env.PROD,
-        sameSite: "lax",
-        path: "/",
-        maxAge: ADMIN_COOKIE_MAX_AGE_SECONDS,
-      });
-      return Astro.redirect("/admin/messages");
+    let rateLimitKey = "admin-login:unknown";
+    try {
+      rateLimitKey = `admin-login:${Astro.clientAddress ?? "unknown"}`;
+    } catch {
+      rateLimitKey = "admin-login:unknown";
     }
 
-    error = "Mot de passe incorrect.";
+    if (isRateLimited(rateLimitKey)) {
+      error = "Trop de tentatives récentes. Merci de réessayer un peu plus tard.";
+    } else {
+      const formData = await Astro.request.formData();
+      const password = String(formData.get("password") ?? "");
+
+      if (verifyAdminPassword(password)) {
+        Astro.cookies.set(ADMIN_COOKIE_NAME, createSessionToken(), {
+          httpOnly: true,
+          secure: import.meta.env.PROD,
+          sameSite: "lax",
+          path: "/",
+          maxAge: ADMIN_COOKIE_MAX_AGE_SECONDS,
+        });
+        return Astro.redirect("/admin/messages");
+      }
+
+      error = "Mot de passe incorrect.";
+    }
   }
 }
 ---
