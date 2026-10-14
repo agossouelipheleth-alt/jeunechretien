@@ -639,7 +639,9 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
   }
   function isPlausiblePhone(value) {
     const digits = value.replace(/[^\d]/g, "");
-    return /^[0-9+()\-.\s]+$/.test(value) && [8, 10, 11].includes(digits.length);
+    // Depuis la renumérotation de 2021, les numéros béninois comptent 10
+    // chiffres hors indicatif, 13 avec l'indicatif 229.
+    return /^[0-9+()\-.\s]+$/.test(value) && [10, 13].includes(digits.length);
   }
 
   function updateSelectedAmountUI(amount) {

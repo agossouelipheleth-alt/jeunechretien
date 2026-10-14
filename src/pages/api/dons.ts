@@ -24,9 +24,10 @@ function isPlausibleEmail(value: string): boolean {
 function isPlausibleBeninPhone(value: string): boolean {
   const digitsOnly = value.replace(/[^\d]/g, "");
   if (!/^[0-9+()\-.\s]+$/.test(value)) return false;
-  // Avec indicatif 229 : 11 chiffres (229 + 8). Sans indicatif : 8 chiffres
-  // (ou 10 si l'ancien format à 2 chiffres de préfixe local est utilisé).
-  return digitsOnly.length === 8 || digitsOnly.length === 10 || digitsOnly.length === 11;
+  // Depuis la renumérotation de 2021, les numéros béninois comptent 10
+  // chiffres hors indicatif (ex. 01 66 34 11 33). Avec l'indicatif 229 :
+  // 13 chiffres (229 + 10).
+  return digitsOnly.length === 10 || digitsOnly.length === 13;
 }
 
 function generateReference(): string {
