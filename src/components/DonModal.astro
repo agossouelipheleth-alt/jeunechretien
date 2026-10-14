@@ -160,6 +160,12 @@ import {
             <span>Je confirme vouloir effectuer ce don du montant indiqué au profit de Jeune Chrétien.</span>
           </label>
 
+          <p class="don-hint" style="margin-bottom: 1rem;">
+            <a href="/politique-confidentialite" target="_blank" rel="noopener noreferrer">
+              Politique de confidentialité de tes données
+            </a>
+          </p>
+
           <p id="don-error-recap" class="don-error" role="alert" hidden></p>
           <button type="submit" class="don-submit" id="don-submit" disabled>
             Continuer vers le paiement
@@ -401,6 +407,11 @@ import {
   .don-hint {
     font-size: 0.8125rem;
     color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+  }
+  .don-hint a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .don-phone-row {

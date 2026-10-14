@@ -3,7 +3,7 @@
 export const prerender = true;
 
 import { getCollection, render } from "astro:content";
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import Layout from "../../layouts/Layout.astro";
 import MediaPlaceholder from "../../components/MediaPlaceholder.astro";
 import SuivreChaineWhatsApp from "../../components/SuivreChaineWhatsApp.astro";
@@ -19,11 +19,18 @@ export async function getStaticPaths() {
 
 const { article } = Astro.props;
 const { Content } = await render(article);
+
+// Image de partage (Open Graph/Twitter) — celle de l'article quand il en a
+// une, sinon le logo par défaut de Layout.astro.
+const shareImage = article.data.image
+  ? (await getImage({ src: article.data.image, width: 1200 })).src
+  : undefined;
 ---
 
 <Layout
   title={`${article.data.title} – Jeune Chrétien`}
   description={article.data.excerpt}
+  image={shareImage}
 >
   <main>
     <article class="container-content px-4 py-16 sm:px-6 lg:py-20">

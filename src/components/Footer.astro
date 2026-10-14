@@ -9,6 +9,7 @@ const navLinks = [
   { href: "/ce-que-nous-faisons", label: "Ce que nous faisons" },
   { href: "/blog", label: "Notre blog" },
   { href: "/rejoignez-nous", label: "Rejoignez-nous" },
+  { href: "/soutenez-nous", label: "Soutenez-nous" },
 ] as const;
 
 const year = new Date().getFullYear();
@@ -127,9 +128,12 @@ const socials = [
       <span>Besoin de nous parler ?</span>
       <a href="/parle-nous" class="footer-link">Parle-nous →</a>
     </p>
-    <p class="text-xs text-ink/40">
+    <p class="mb-2 text-xs text-ink/40">
       © {year} Jeune Chrétien, designed by Eliphéleth Sergio Agossou
     </p>
+    <a href="/politique-confidentialite" class="footer-link text-xs text-ink/50">
+      Politique de confidentialité
+    </a>
   </div>
 </footer>
 

@@ -1,0 +1,84 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+
+const liens = [
+  { href: "/", label: "Retourner à l'accueil" },
+  { href: "/ce-que-nous-faisons", label: "Découvrir ce que nous faisons" },
+  { href: "/blog", label: "Lire notre blog" },
+  { href: "/parle-nous", label: "Nous écrire" },
+] as const;
+---
+
+<Layout
+  title="Page introuvable – Jeune Chrétien"
+  description="Cette page n'existe pas ou n'est plus disponible."
+>
+  <main>
+    <section class="px-4 py-24 sm:px-6 lg:py-32">
+      <div class="container-content mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
+        <p class="kicker">Erreur 404</p>
+        <h1 class="page-title">Cette page n'existe pas, ou plus.</h1>
+        <p class="text-ink/70">
+          Le lien suivi est peut-être incomplet ou la page a été déplacée.
+          Voici quelques pistes pour continuer ta visite :
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+          {
+            liens.map((lien, index) => (
+              <a href={lien.href} class={index === 0 ? "btn-primary" : "btn-secondary"}>
+                {lien.label}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .kicker {
+    display: inline-block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .page-title {
+    font-size: clamp(1.75rem, 1.3rem + 2.2vw, 3rem);
+    line-height: 1.15;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1.75rem;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--color-accent);
+    transition:
+      filter 150ms var(--ease-out-site),
+      background-color 150ms var(--ease-out-site);
+  }
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-on-fill);
+  }
+  .btn-primary:hover {
+    filter: brightness(0.88);
+  }
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+  .btn-secondary:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  }
+</style>

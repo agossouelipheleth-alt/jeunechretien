@@ -10,9 +10,18 @@ import DonModal from "../components/DonModal.astro";
 interface Props {
   title: string;
   description?: string;
+  // Image de partage (Open Graph/Twitter) — chemin absolu depuis la
+  // racine du site. Par défaut, le logo de l'association.
+  image?: string;
 }
 
-const { title, description } = Astro.props;
+const DEFAULT_DESCRIPTION =
+  "Jeune Chrétien aide les jeunes chrétiens à grandir dans leur foi, développer leur potentiel et prendre leur place dans la société.";
+
+const { title, description = DEFAULT_DESCRIPTION, image = "/og-image.png" } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const imageURL = new URL(image, Astro.site);
 ---
 
 <!doctype html>
@@ -33,10 +42,26 @@ const { title, description } = Astro.props;
       }
     </script>
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="canonical" href={canonicalURL} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    {description && <meta name="description" content={description} />}
+    <meta name="description" content={description} />
     <title>{title}</title>
+
+    <!-- Open Graph — aperçus de partage (WhatsApp, Facebook, LinkedIn...),
+         canal de diffusion principal de Jeune Chrétien. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Jeune Chrétien" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={imageURL} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
   </head>
   <body>
     <Navbar />
