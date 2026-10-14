@@ -11,6 +11,12 @@
 // /api/dons n'enregistre qu'une intention de don — jamais un paiement
 // réellement effectué.
 import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons-config";
+import {
+  DON_COUNTRIES,
+  DEFAULT_DON_COUNTRY_CODE,
+  formatDonPhoneExample,
+  type DonCountry,
+} from "../lib/dons-countries";
 ---
 
 <div id="don-overlay" class="don-overlay" hidden>
@@ -21,7 +27,7 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
 
     <div id="don-flow">
       <p class="don-kicker">Soutenir Jeune Chrétien</p>
-      <h2 id="don-title" class="don-title">Soutenir Jeune Chrétien</h2>
+      <h2 id="don-title" class="don-title">Faire un don</h2>
       <p class="don-intro">
         Votre contribution nous aide à développer nos contenus, nos
         ressources et nos initiatives en faveur de la jeunesse chrétienne.
@@ -85,19 +91,33 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
           </div>
           <p id="don-error-email" class="don-error" role="alert" hidden></p>
           <div class="don-field-group">
-            <label class="don-field-label" for="don-telephone">Numéro de téléphone (facultatif)</label>
-            <input
-              type="tel"
-              id="don-telephone"
-              name="telephone"
-              class="don-input"
-              autocomplete="tel"
-              placeholder="+229 XX XX XX XX"
-            />
+            <span class="don-field-label" id="don-pays-label">Numéro de téléphone (facultatif)</span>
+            <div class="don-phone-row">
+              <select id="don-pays" class="don-input don-pays-select" aria-labelledby="don-pays-label">
+                {
+                  DON_COUNTRIES.map((country: DonCountry) => (
+                    <option value={country.code} selected={country.code === DEFAULT_DON_COUNTRY_CODE}>
+                      {country.flag} {country.label} (+{country.dialCode})
+                    </option>
+                  ))
+                }
+              </select>
+              <input
+                type="tel"
+                id="don-telephone"
+                name="telephone"
+                class="don-input don-phone-input"
+                autocomplete="tel"
+                placeholder={formatDonPhoneExample(
+                  DON_COUNTRIES.find((c: DonCountry) => c.code === DEFAULT_DON_COUNTRY_CODE)!
+                )}
+              />
+            </div>
             <p class="don-hint">
-              Pour préremplir la page de paiement si tu règles par Mobile
-              Money. Jeune Chrétien ne te demandera jamais ton code PIN ou
-              ton mot de passe Mobile Money.
+              Choisis ton pays, puis saisis ton numéro (avec ou sans
+              l'indicatif) pour préremplir la page de paiement si tu règles
+              par Mobile Money. Jeune Chrétien ne te demandera jamais ton
+              code PIN ou ton mot de passe Mobile Money.
             </p>
           </div>
           <p id="don-error-telephone" class="don-error" role="alert" hidden></p>
@@ -383,6 +403,28 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
     color: color-mix(in srgb, var(--color-ink) 50%, transparent);
   }
 
+  .don-phone-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  @media (min-width: 26rem) {
+    .don-phone-row {
+      flex-direction: row;
+    }
+    .don-pays-select {
+      flex: 0 0 auto;
+      width: 11rem;
+    }
+    .don-phone-input {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+  .don-pays-select {
+    cursor: pointer;
+  }
+
   .don-honeypot {
     position: absolute;
     width: 1px;
@@ -545,7 +587,15 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
   }
 </style>
 
-<script define:vars={{ minAmount: MIN_AMOUNT, maxAmount: MAX_AMOUNT, currency: CURRENCY }}>
+<script
+  define:vars={{
+    minAmount: MIN_AMOUNT,
+    maxAmount: MAX_AMOUNT,
+    currency: CURRENCY,
+    donCountries: DON_COUNTRIES,
+    defaultCountryCode: DEFAULT_DON_COUNTRY_CODE,
+  }}
+>
   const overlay = document.getElementById("don-overlay");
   const modal = document.getElementById("don-modal");
   const closeButton = document.getElementById("don-close");
@@ -569,6 +619,7 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
   const amountButtons = document.querySelectorAll(".don-amount-card");
   const amountCustomInput = document.getElementById("don-amount-custom");
   const emailInput = document.getElementById("don-email");
+  const paysSelect = document.getElementById("don-pays");
   const phoneInput = document.getElementById("don-telephone");
   const confirmCheckbox = document.getElementById("don-confirm");
   const submitButton = document.getElementById("don-submit");
@@ -576,10 +627,43 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
   let state = {
     montant: null,
     email: "",
+    pays: defaultCountryCode,
     telephone: "",
   };
   let currentStepIndex = 0;
   let lastFocusedElement = null;
+
+  function getCountry(code) {
+    return donCountries.find((c) => c.code === code) ?? donCountries[0];
+  }
+
+  // Même regroupement que formatDonPhoneExample() côté serveur
+  // (src/lib/dons-countries.ts) — dupliqué ici car ce script `define:vars`
+  // est traité comme is:inline et ne peut pas importer de module TS.
+  function phoneExample(country) {
+    const groups = [];
+    let remaining = country.nsnLength;
+    if (remaining % 2 === 1) {
+      groups.push("X");
+      remaining -= 1;
+    }
+    while (remaining > 0) {
+      groups.push("XX");
+      remaining -= 2;
+    }
+    return groups.join(" ");
+  }
+
+  function updatePhonePlaceholder() {
+    if (!phoneInput) return;
+    phoneInput.placeholder = phoneExample(getCountry(paysSelect?.value ?? defaultCountryCode));
+  }
+
+  paysSelect?.addEventListener("change", () => {
+    updatePhonePlaceholder();
+    clearError("telephone");
+  });
+  updatePhonePlaceholder();
 
   function fmt(n) {
     return `${n.toLocaleString("fr-FR")} ${currency}`;
@@ -637,11 +721,19 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
   function isPlausibleEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
-  function isPlausiblePhone(value) {
-    const digits = value.replace(/[^\d]/g, "");
-    // Depuis la renumérotation de 2021, les numéros béninois comptent 10
-    // chiffres hors indicatif, 13 avec l'indicatif 229.
-    return /^[0-9+()\-.\s]+$/.test(value) && [10, 13].includes(digits.length);
+  // Normalise vers "+<indicatif><numéro national>" si la longueur
+  // correspond au pays sélectionné (avec ou sans indicatif saisi), sinon
+  // renvoie null. Même logique que normalizeDonPhone() côté serveur
+  // (src/lib/dons-countries.ts).
+  function normalizePhone(value, countryCode) {
+    if (!/^[0-9+()\-.\s]+$/.test(value)) return null;
+    const country = getCountry(countryCode);
+    let digits = value.replace(/[^\d]/g, "");
+    if (digits.startsWith(country.dialCode) && digits.length === country.dialCode.length + country.nsnLength) {
+      digits = digits.slice(country.dialCode.length);
+    }
+    if (digits.length !== country.nsnLength) return null;
+    return `+${country.dialCode}${digits}`;
   }
 
   function updateSelectedAmountUI(amount) {
@@ -720,16 +812,27 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
         }
         emailInput?.removeAttribute("aria-invalid");
 
-        const phoneValue = phoneInput?.value.trim() ?? "";
-        if (phoneValue && !isPlausiblePhone(phoneValue)) {
-          showError("telephone", "Ce numéro de téléphone ne semble pas valide.");
-          phoneInput?.setAttribute("aria-invalid", "true");
-          return;
+        const pays = paysSelect?.value ?? defaultCountryCode;
+        const phoneRaw = phoneInput?.value.trim() ?? "";
+        let normalizedPhone = "";
+        if (phoneRaw) {
+          const normalized = normalizePhone(phoneRaw, pays);
+          if (!normalized) {
+            const country = getCountry(pays);
+            showError(
+              "telephone",
+              `Ce numéro ne correspond pas au format attendu pour ${country.label} (${country.nsnLength} chiffres).`
+            );
+            phoneInput?.setAttribute("aria-invalid", "true");
+            return;
+          }
+          normalizedPhone = normalized;
         }
         phoneInput?.removeAttribute("aria-invalid");
 
         state.email = value;
-        state.telephone = phoneValue;
+        state.pays = pays;
+        state.telephone = normalizedPhone;
         fillSummary();
         showStep("recap");
         updateSubmitState();
@@ -764,6 +867,7 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
         body: JSON.stringify({
           montant: state.montant,
           email: state.email,
+          pays: state.pays,
           telephone: state.telephone,
           confirme: true,
           website: websiteInput?.value ?? "",
@@ -854,9 +958,10 @@ import { SUGGESTED_AMOUNTS, MIN_AMOUNT, MAX_AMOUNT, CURRENCY } from "../lib/dons
   }
 
   function resetModal() {
-    state = { montant: null, email: "", telephone: "" };
+    state = { montant: null, email: "", pays: defaultCountryCode, telephone: "" };
     form?.reset();
     updateSelectedAmountUI(-1);
+    updatePhonePlaceholder();
     if (submitButton) submitButton.disabled = true;
     ["montant", "email", "telephone", "recap"].forEach(clearError);
     showStep("montant");

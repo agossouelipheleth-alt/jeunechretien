@@ -3,9 +3,11 @@ import { getSupabaseClient, insertDon, updateDon, type DonInsertPayload } from "
 import { isRateLimited } from "../../lib/rate-limit";
 import { MIN_AMOUNT, MAX_AMOUNT, isMobileMoneyConfigured } from "../../lib/dons-config";
 import { createNyoleCheckoutSession } from "../../lib/nyole";
+import { DON_COUNTRIES, DEFAULT_DON_COUNTRY_CODE, normalizeDonPhone } from "../../lib/dons-countries";
 
 const MAX_EMAIL_LENGTH = 320;
-const MAX_PHONE_LENGTH = 30;
+const MAX_RAW_PHONE_LENGTH = 40;
+const VALID_COUNTRY_CODES = DON_COUNTRIES.map((c) => c.code);
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -16,18 +18,6 @@ function json(data: unknown, status = 200) {
 
 function isPlausibleEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-// Contrôle raisonnable du numéro Mobile Money béninois : accepte avec ou
-// sans indicatif +229, espaces/tirets tolérés, 8 chiffres locaux attendus
-// (format Bénin) après un éventuel indicatif.
-function isPlausibleBeninPhone(value: string): boolean {
-  const digitsOnly = value.replace(/[^\d]/g, "");
-  if (!/^[0-9+()\-.\s]+$/.test(value)) return false;
-  // Depuis la renumérotation de 2021, les numéros béninois comptent 10
-  // chiffres hors indicatif (ex. 01 66 34 11 33). Avec l'indicatif 229 :
-  // 13 chiffres (229 + 10).
-  return digitsOnly.length === 10 || digitsOnly.length === 13;
 }
 
 function generateReference(): string {
@@ -106,20 +96,35 @@ export const POST: APIRoute = async (context) => {
     );
   }
 
+  // --- Pays ---------------------------------------------------------------
+  const pays = str(data.pays) || DEFAULT_DON_COUNTRY_CODE;
+  if (!VALID_COUNTRY_CODES.includes(pays)) {
+    return json({ ok: false, error: "invalid_country", message: "Pays non pris en charge." }, 400);
+  }
+
   // --- Téléphone (facultatif — sert seulement à préremplir la page de
   //     paiement nyole pour le Mobile Money) -------------------------------
   const telephoneRaw = str(data.telephone);
-  if (telephoneRaw && (!isPlausibleBeninPhone(telephoneRaw) || telephoneRaw.length > MAX_PHONE_LENGTH)) {
-    return json(
-      {
-        ok: false,
-        error: "invalid_phone",
-        message: "Le numéro de téléphone n'est pas valide.",
-      },
-      400
-    );
+  let telephone: string | null = null;
+  if (telephoneRaw) {
+    if (telephoneRaw.length > MAX_RAW_PHONE_LENGTH) {
+      return json(
+        { ok: false, error: "invalid_phone", message: "Le numéro de téléphone n'est pas valide." },
+        400
+      );
+    }
+    telephone = normalizeDonPhone(telephoneRaw, pays);
+    if (!telephone) {
+      return json(
+        {
+          ok: false,
+          error: "invalid_phone",
+          message: "Le numéro de téléphone ne correspond pas au format attendu pour le pays sélectionné.",
+        },
+        400
+      );
+    }
   }
-  const telephone = telephoneRaw || null;
 
   // --- Confirmation --------------------------------------------------------
   if (data.confirme !== true) {
