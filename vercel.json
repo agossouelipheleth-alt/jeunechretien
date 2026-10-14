@@ -16,5 +16,11 @@
         { "key": "Vary", "value": "Origin" }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/keep-supabase-alive",
+      "schedule": "0 3 * * 1,4"
+    }
   ]
 }
