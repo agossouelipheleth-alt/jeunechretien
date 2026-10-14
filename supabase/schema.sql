@@ -137,18 +137,19 @@ create trigger candidatures_set_updated_at
 -- chrétien) que "messages" : à ne jamais exposer via une policy anon.
 alter table public.candidatures enable row level security;
 
--- Schéma pour la fonctionnalité "Soutenez-nous" (dons Mobile Money — voir
--- /soutenez-nous, /api/dons et /admin/dons). Réutilise le même projet
--- Supabase que les tables ci-dessus, dans une table distincte.
+-- Schéma pour la fonctionnalité "Soutenez-nous" (dons Mobile Money et
+-- carte, prestataire nyole — voir /soutenez-nous, /api/dons,
+-- /api/webhooks/nyole et /admin/dons). Réutilise le même projet Supabase
+-- que les tables ci-dessus, dans une table distincte.
 --
--- IMPORTANT : aucun prestataire de paiement Mobile Money n'est configuré
--- sur ce projet pour l'instant (voir src/lib/dons-config.ts). Tant que ce
--- sera le cas, chaque ligne de cette table représente une INTENTION de don
--- (montant, contact, opérateur souhaité) que l'équipe peut utiliser pour
+-- IMPORTANT : tant que NYOLE_SECRET_KEY n'est pas renseignée (voir
+-- src/lib/dons-config.ts et .env.example), chaque ligne de cette table
+-- représente une INTENTION de don que l'équipe peut utiliser pour
 -- recontacter le donateur manuellement — jamais un paiement réellement
 -- effectué. Le statut par défaut 'en_attente_configuration' reflète
--- précisément cela. Les statuts 'initie'/'en_attente'/'reussi'/'echoue'
--- sont prévus pour le jour où un prestataire réel sera branché.
+-- précisément cela. Une fois nyole configuré : 'initie' (session de
+-- paiement créée, donateur redirigé), puis 'reussi'/'echoue'/'annule'/
+-- 'rembourse' selon la confirmation reçue par webhook signé.
 
 do $$ begin
   create type don_statut as enum (
@@ -189,3 +190,17 @@ create trigger dons_set_updated_at
   for each row execute function public.set_updated_at();
 
 alter table public.dons enable row level security;
+
+-- Migration additive — prestataire de paiement retenu : nyole
+-- (https://nyole.com). Le donateur choisit son opérateur Mobile Money ou
+-- sa carte bancaire sur la page de paiement hébergée par nyole : nos
+-- propres champs "operateur"/"telephone" ne sont donc plus obligatoires
+-- (le téléphone reste collecté, en option, pour préremplir cette page).
+-- "annule" (paiement abandonné/annulé) et "rembourse" (remboursement fait
+-- par l'équipe nyole) complètent les statuts déjà prévus.
+alter table public.dons alter column operateur drop not null;
+alter table public.dons alter column telephone drop not null;
+alter table public.dons add column if not exists nyole_session_id text;
+
+alter type don_statut add value if not exists 'annule';
+alter type don_statut add value if not exists 'rembourse';

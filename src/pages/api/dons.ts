@@ -1,14 +1,8 @@
 import type { APIRoute } from "astro";
-import { getSupabaseClient, insertDon, type DonInsertPayload } from "../../lib/supabase";
+import { getSupabaseClient, insertDon, updateDon, type DonInsertPayload } from "../../lib/supabase";
 import { isRateLimited } from "../../lib/rate-limit";
-import {
-  MOBILE_MONEY_OPERATORS,
-  MIN_AMOUNT,
-  MAX_AMOUNT,
-  isMobileMoneyConfigured,
-} from "../../lib/dons-config";
-
-const VALID_OPERATORS = MOBILE_MONEY_OPERATORS.map((o) => o.key);
+import { MIN_AMOUNT, MAX_AMOUNT, isMobileMoneyConfigured } from "../../lib/dons-config";
+import { createNyoleCheckoutSession } from "../../lib/nyole";
 
 const MAX_EMAIL_LENGTH = 320;
 const MAX_PHONE_LENGTH = 30;
@@ -111,27 +105,20 @@ export const POST: APIRoute = async (context) => {
     );
   }
 
-  // --- Opérateur Mobile Money --------------------------------------------
-  const operateur = str(data.operateur);
-  if (!VALID_OPERATORS.includes(operateur)) {
-    return json(
-      { ok: false, error: "invalid_operator", message: "Merci de sélectionner un opérateur Mobile Money." },
-      400
-    );
-  }
-
-  // --- Téléphone ----------------------------------------------------------
-  const telephone = str(data.telephone);
-  if (!telephone || !isPlausibleBeninPhone(telephone) || telephone.length > MAX_PHONE_LENGTH) {
+  // --- Téléphone (facultatif — sert seulement à préremplir la page de
+  //     paiement nyole pour le Mobile Money) -------------------------------
+  const telephoneRaw = str(data.telephone);
+  if (telephoneRaw && (!isPlausibleBeninPhone(telephoneRaw) || telephoneRaw.length > MAX_PHONE_LENGTH)) {
     return json(
       {
         ok: false,
         error: "invalid_phone",
-        message: "Le numéro Mobile Money n'est pas valide.",
+        message: "Le numéro de téléphone n'est pas valide.",
       },
       400
     );
   }
+  const telephone = telephoneRaw || null;
 
   // --- Confirmation --------------------------------------------------------
   if (data.confirme !== true) {
@@ -146,19 +133,18 @@ export const POST: APIRoute = async (context) => {
   }
 
   const reference = generateReference();
+  const supabase = getSupabaseClient();
 
   // Tant qu'aucun prestataire Mobile Money n'est configuré, on ne lance
   // jamais de paiement réel — voir src/lib/dons-config.ts. On se contente
   // d'enregistrer l'intention de don si Supabase est disponible, pour que
   // l'équipe puisse recontacter le donateur manuellement.
   if (!isMobileMoneyConfigured()) {
-    const supabase = getSupabaseClient();
     if (supabase) {
       const payload: DonInsertPayload = {
         reference,
         montant,
         email,
-        operateur,
         telephone,
         statut: "en_attente_configuration",
       };
@@ -177,21 +163,75 @@ export const POST: APIRoute = async (context) => {
       configured: false,
       reference,
       message:
-        "Le paiement Mobile Money en ligne n'est pas encore activé sur le site. Ton intention de don a bien été enregistrée : notre équipe te contactera pour convenir des modalités. Tu peux aussi nous écrire directement.",
+        "Le paiement en ligne n'est pas encore activé sur le site. Ton intention de don a bien été enregistrée : notre équipe te contactera pour convenir des modalités. Tu peux aussi nous écrire directement.",
     });
   }
 
-  // TODO: intégration prestataire réel — initialiser le paiement auprès du
-  // prestataire configuré (MOBILE_MONEY_PROVIDER), créer la ligne "dons"
-  // avec le statut "initie", puis suivre/confirmer le statut via son
-  // mécanisme de notification serveur-à-serveur avant de jamais annoncer
-  // un don "reussi" au client.
-  return json(
-    {
-      ok: false,
-      error: "not_implemented",
-      message: "L'intégration du paiement est en cours de configuration. Merci de réessayer plus tard.",
-    },
-    503
-  );
+  // --- Paiement réel via nyole ---------------------------------------------
+  // Enregistrement best-effort AVANT la création de la session : si
+  // Supabase échoue ou n'est pas configuré, on laisse quand même le
+  // donateur payer (l'argent part bien vers le compte nyole de
+  // l'association), mais le suivi dans /admin/dons et la confirmation
+  // automatique par webhook ne pourront pas fonctionner pour ce don.
+  let donId: string | null = null;
+  if (supabase) {
+    const payload: DonInsertPayload = {
+      reference,
+      montant,
+      email,
+      telephone,
+      statut: "initie",
+    };
+    const { data: inserted, error } = await insertDon(supabase, payload);
+    if (error) {
+      console.error("[dons] Échec de l'enregistrement du don avant paiement :", error.message);
+    } else {
+      donId = inserted?.id ?? null;
+    }
+  } else {
+    console.warn(
+      "[dons] Supabase non configuré — ce don ne sera pas suivi dans /admin/dons ni confirmé automatiquement."
+    );
+  }
+
+  const origin = context.url.origin;
+  const session = await createNyoleCheckoutSession({
+    amount: montant,
+    currency: "XOF",
+    customerEmail: email,
+    customerPhone: telephone ?? undefined,
+    description: "Don à Jeune Chrétien",
+    successUrl: new URL(`/soutenez-nous?don=succes&ref=${encodeURIComponent(reference)}`, origin).toString(),
+    cancelUrl: new URL(`/soutenez-nous?don=annule&ref=${encodeURIComponent(reference)}`, origin).toString(),
+    metadata: { order_id: reference },
+    idempotencyKey: reference,
+  });
+
+  if (!session.ok) {
+    if (supabase && donId) {
+      const { error } = await updateDon(supabase, donId, { statut: "echoue" });
+      if (error) console.error("[dons] Échec de la mise à jour du statut après échec nyole :", error.message);
+    }
+    return json(
+      {
+        ok: false,
+        error: session.error,
+        message:
+          "La création du paiement a échoué. Merci de réessayer dans un instant, ou de nous écrire directement.",
+      },
+      502
+    );
+  }
+
+  if (supabase && donId) {
+    const { error } = await updateDon(supabase, donId, { nyole_session_id: session.data.id });
+    if (error) console.error("[dons] Échec de l'enregistrement de l'identifiant de session nyole :", error.message);
+  }
+
+  return json({
+    ok: true,
+    configured: true,
+    reference,
+    redirectUrl: session.data.url,
+  });
 };

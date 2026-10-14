@@ -12,7 +12,14 @@ export type CandidatureDisponibilite =
   | "quelques_heures_mois"
   | "selon_besoins";
 
-export type DonStatut = "en_attente_configuration" | "initie" | "en_attente" | "reussi" | "echoue";
+export type DonStatut =
+  | "en_attente_configuration"
+  | "initie"
+  | "en_attente"
+  | "reussi"
+  | "echoue"
+  | "annule"
+  | "rembourse";
 
 export interface ParleNousMessage {
   id: string;
@@ -62,10 +69,11 @@ export interface Don {
   montant: number;
   devise: string;
   email: string;
-  operateur: string;
-  telephone: string;
+  operateur: string | null;
+  telephone: string | null;
   statut: DonStatut;
   reference_prestataire: string | null;
+  nyole_session_id: string | null;
   notes_internes: string | null;
   created_at: string;
   updated_at: string;
@@ -139,15 +147,17 @@ interface Database {
           montant: number;
           devise?: string;
           email: string;
-          operateur: string;
-          telephone: string;
+          operateur?: string | null;
+          telephone?: string | null;
           statut?: DonStatut;
           reference_prestataire?: string | null;
+          nyole_session_id?: string | null;
           notes_internes?: string | null;
         };
         Update: Partial<{
           statut: DonStatut;
           reference_prestataire: string | null;
+          nyole_session_id: string | null;
           notes_internes: string | null;
         }>;
         Relationships: [];
@@ -237,4 +247,14 @@ export async function insertDon(client: SupabaseClient<Database>, payload: DonIn
 
 export async function updateDon(client: SupabaseClient<Database>, id: string, payload: DonUpdatePayload) {
   return client.from("dons").update(payload as never).eq("id", id);
+}
+
+/** Met à jour un don par sa référence interne (JC-DON-...), utilisé par le
+ * webhook nyole qui ne connaît que la référence transmise en metadata. */
+export async function updateDonByReference(
+  client: SupabaseClient<Database>,
+  reference: string,
+  payload: DonUpdatePayload
+) {
+  return client.from("dons").update(payload as never).eq("reference", reference);
 }

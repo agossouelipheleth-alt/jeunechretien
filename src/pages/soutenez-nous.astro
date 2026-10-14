@@ -83,6 +83,14 @@ const usages = [
   description="Soutenez Jeune Chrétien par un don, un partenariat ou le relais de nos initiatives en faveur de la jeunesse chrétienne."
 >
   <main>
+    <!-- Bandeau de retour après redirection depuis la page de paiement
+         nyole (?don=succes|annule&ref=JC-DON-...). Page statique
+         (prerender = true) : le statut réel est vérifié côté client via
+         /api/dons/statut, jamais déduit du seul paramètre d'URL. -->
+    <div id="don-return-banner" class="don-return-banner container-content" hidden role="status">
+      <p id="don-return-text"></p>
+    </div>
+
     <!-- ============================================================ -->
     <!-- Section 1 — Introduction -->
     <!-- ============================================================ -->
@@ -446,4 +454,89 @@ const usages = [
     list-style: disc;
     color: color-mix(in srgb, var(--color-ink) 70%, transparent);
   }
+
+  /* --- Bandeau de retour de paiement (nyole) --------------------------- */
+  .don-return-banner {
+    margin-top: 2rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, var(--color-ink) 6%, transparent);
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    text-align: center;
+  }
+  .don-return-banner[data-state="success"] {
+    background-color: color-mix(in srgb, #1e8e3e 14%, transparent);
+    color: #1e8e3e;
+  }
+  .don-return-banner[data-state="error"] {
+    background-color: color-mix(in srgb, #b3261e 10%, transparent);
+    color: #8c1d17;
+  }
 </style>
+
+<script>
+  // Retour depuis la page de paiement nyole (?don=succes|annule&ref=...).
+  // On ne déduit jamais le résultat du seul paramètre d'URL : on
+  // interroge /api/dons/statut, alimenté par le webhook signé nyole — voir
+  // src/pages/api/webhooks/nyole.ts.
+  const params = new URLSearchParams(window.location.search);
+  const don = params.get("don");
+  const ref = params.get("ref");
+
+  if (don && ref) {
+    const banner = document.getElementById("don-return-banner");
+    const text = document.getElementById("don-return-text");
+
+    const messages: Record<string, string> = {
+      reussi: "Merci ! Ton don a bien été reçu.",
+      echoue: "Le paiement n'a pas abouti. Tu peux réessayer ou nous écrire directement.",
+      annule: "Le paiement a été annulé. Tu peux réessayer quand tu le souhaites.",
+      initie: "Ton paiement est en cours de confirmation. Tu recevras une confirmation par e-mail.",
+      en_attente: "Ton paiement est en cours de confirmation. Tu recevras une confirmation par e-mail.",
+      rembourse: "Ce don a été remboursé.",
+      en_attente_configuration: "Ton intention de don a bien été enregistrée.",
+    };
+
+    if (banner && text) {
+      banner.hidden = false;
+      banner.dataset.state = "pending";
+      text.textContent = "Vérification de ton paiement en cours…";
+
+      const check = async (attempt: number): Promise<void> => {
+        try {
+          const response = await fetch(`/api/dons/statut?ref=${encodeURIComponent(ref)}`);
+          const data = await response.json().catch(() => null);
+          if (response.ok && data?.ok && typeof data.statut === "string") {
+            const statut: string = data.statut;
+            banner.dataset.state =
+              statut === "reussi" ? "success" : statut === "echoue" || statut === "annule" ? "error" : "pending";
+            text.textContent = messages[statut] ?? `Statut du paiement : ${statut}`;
+            if ((statut === "initie" || statut === "en_attente") && attempt < 5) {
+              window.setTimeout(() => check(attempt + 1), 2000);
+            }
+            return;
+          }
+        } catch {
+          // Erreur réseau ponctuelle — on retente ci-dessous plutôt que
+          // d'afficher une erreur définitive.
+        }
+        if (attempt < 5) {
+          window.setTimeout(() => check(attempt + 1), 2000);
+        } else {
+          banner.dataset.state = "pending";
+          text.textContent = "Nous confirmons ton paiement. Tu recevras un e-mail de confirmation.";
+        }
+      };
+
+      check(0);
+    }
+
+    // Nettoie l'URL pour éviter de re-déclencher la vérification si la
+    // page est rechargée, partagée ou mise en favori.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("don");
+    url.searchParams.delete("ref");
+    window.history.replaceState({}, "", url.toString());
+  }
+</script>

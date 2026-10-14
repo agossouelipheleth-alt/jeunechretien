@@ -5,13 +5,23 @@ import { CURRENCY } from "../../lib/dons-config";
 
 const statutLabels: Record<DonStatut, string> = {
   en_attente_configuration: "Intention (paiement non activé)",
-  initie: "Initié",
+  initie: "Initié (redirigé vers nyole)",
   en_attente: "En attente de confirmation",
   reussi: "Réussi",
   echoue: "Échoué",
+  annule: "Annulé",
+  rembourse: "Remboursé",
 };
 
-const statutOptions: DonStatut[] = ["en_attente_configuration", "initie", "en_attente", "reussi", "echoue"];
+const statutOptions: DonStatut[] = [
+  "en_attente_configuration",
+  "initie",
+  "en_attente",
+  "reussi",
+  "echoue",
+  "annule",
+  "rembourse",
+];
 
 const supabase = getSupabaseClient();
 let actionError: string | null = null;
@@ -59,6 +69,8 @@ const filters = [
   { key: "en_attente", label: "En attente" },
   { key: "reussi", label: "Réussis" },
   { key: "echoue", label: "Échoués" },
+  { key: "annule", label: "Annulés" },
+  { key: "rembourse", label: "Remboursés" },
 ] as const;
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
@@ -87,10 +99,12 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
     </header>
 
     <p class="admin-notice">
-      Aucun prestataire de paiement Mobile Money n'est connecté (voir{" "}
-      <code>src/lib/dons-config.ts</code>). Chaque ligne ci-dessous est une{" "}
-      <strong>intention de don</strong> laissée par un visiteur — à recontacter
-      manuellement, pas un paiement reçu.
+      Prestataire de paiement : nyole. Tant qu'aucune clé n'est configurée
+      (voir <code>src/lib/dons-config.ts</code>), chaque ligne au statut{" "}
+      <strong>« Intention »</strong> est un don souhaité par un visiteur — à
+      recontacter manuellement, pas un paiement reçu. Les statuts « Réussi »,
+      « Échoué », « Annulé » et « Remboursé » sont mis à jour automatiquement
+      par le webhook nyole.
     </p>
 
     {!supabase && (
@@ -144,13 +158,22 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
                     <div>
                       <dt>Contact</dt>
                       <dd>
-                        <a href={`mailto:${don.email}`}>{don.email}</a> · {don.telephone}
+                        <a href={`mailto:${don.email}`}>{don.email}</a>
+                        {don.telephone && <> · {don.telephone}</>}
                       </dd>
                     </div>
-                    <div>
-                      <dt>Opérateur</dt>
-                      <dd>{don.operateur}</dd>
-                    </div>
+                    {don.reference_prestataire && (
+                      <div>
+                        <dt>Référence prestataire</dt>
+                        <dd>{don.reference_prestataire}</dd>
+                      </div>
+                    )}
+                    {don.nyole_session_id && (
+                      <div>
+                        <dt>Session nyole</dt>
+                        <dd>{don.nyole_session_id}</dd>
+                      </div>
+                    )}
                   </dl>
 
                   <div class="don-actions">
@@ -317,9 +340,14 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
     background-color: color-mix(in srgb, #1e8e3e 14%, transparent);
     color: #1e8e3e;
   }
-  .statut-badge.statut-echoue {
+  .statut-badge.statut-echoue,
+  .statut-badge.statut-annule {
     background-color: color-mix(in srgb, #b3261e 10%, transparent);
     color: #8c1d17;
+  }
+  .statut-badge.statut-rembourse {
+    background-color: color-mix(in srgb, #e37400 12%, transparent);
+    color: #a35700;
   }
 
   .don-date {
